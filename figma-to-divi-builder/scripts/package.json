@@ -1,0 +1,11 @@
+{
+  "name": "figma-to-divi-builder-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mining, building and validation helpers for the figma-to-divi-builder skill",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "fast-xml-parser": "^5.10.0"
+  }
+}

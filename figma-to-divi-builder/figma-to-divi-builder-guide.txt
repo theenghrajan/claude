@@ -1,0 +1,282 @@
+FIGMA -> DIVI BUILDER (WXR) SKILL — USER GUIDE
+==============================================
+
+WHAT THIS SKILL DOES
+---------------------
+Converts a Figma design (a section or page) into a standalone, importable
+WordPress WXR file (.xml) containing a Divi layout — by default a Divi
+Library item, or a draft page on request. Every section, row, column and
+module it generates is either:
+
+  - a deep clone of a real node already working on the target site (mined
+    from that site's own WordPress export), or
+  - when no real instance exists, built from the actual Divi / Divi
+    extension source code, or from Divi core modules using content-only
+    attributes (styling then comes from the site's own defaults/presets) —
+    never a hand-guessed attribute set.
+
+Works with both Divi 4 (content stored as [et_pb_*] shortcodes) and Divi 5
+(content stored as <!-- wp:divi/* --> blocks). It builds in whichever
+format the site's own content uses.
+
+Trigger phrases: "Divi", "Divi Builder", "Elegant Themes", "et_pb_",
+"Divi Library", "Divi Theme Builder", or "convert this Figma design into a
+WordPress import" for a Divi site.
+
+Runtime: Node.js only (no PHP needed).
+
+
+REQUIREMENTS & NECESSARY PACKAGES
+----------------------------------
+Runtime:
+  - Node.js (any recent LTS).
+
+npm packages (declared in scripts/package.json):
+
+  Package            Version   Why
+  ------------------ --------- --------------------------------------------
+  fast-xml-parser    ^5.10.0   Validates the WXR (.xml) output files.
+
+  (No php-serialize: unlike Beaver Builder, Divi stores layouts as plain
+  shortcode text / JSON in post_content, not PHP-serialized postmeta.)
+
+Install once with:
+  cd scripts
+  npm install
+
+Access / integration requirements:
+  - Figma MCP access in Claude (get_metadata, get_design_context,
+    get_screenshot, download_assets).
+  - WordPress admin access on the target site, to export
+    (Tools -> Export -> All content) and later import
+    (Tools -> Import -> WordPress).
+  - (Optional, improves accuracy) the site's actual theme/plugin source,
+    unzipped: Divi/ (or divi-builder/) plus any Divi extension plugins.
+    Divi has no free "Lite" version, so there is no public fallback source.
+
+
+WHAT YOU NEED BEFORE STARTING
+-------------------------------
+1. A WXR export from the target site (Tools -> Export -> All content). Use
+   "All content": most real Divi content lives on pages, not in the Divi
+   Library.
+2. A Figma URL with a node-id= parameter, pointing at the exact
+   section/page to convert.
+3. scripts/node_modules/ installed (npm install inside scripts/).
+4. (Optional) the site's Divi theme / extension source.
+
+Without #1 or #2 the process stops and asks. Everything else runs to
+completion without mid-build questions.
+
+
+GETTING STARTED — FIRST RUN
+-----------------------------
+(A shorter, printable version of this section, with troubleshooting, is in
+quick-start.md.)
+
+A. Export the Divi site
+   wp-admin -> Tools -> Export -> "All content" -> Download Export File.
+   Save the .xml in your workspace, e.g.
+     d:\work\claude\projects\<site-name>\export.xml
+   ("All content" matters: most Divi designs live on pages, not in the
+   Divi Library.)
+
+B. Copy the Figma link
+   In Figma, right-click the frame -> Copy link to selection. The link must
+   contain node-id=.
+
+C. Connect Figma to Claude (once per machine/account)
+   Either:
+     - claude.ai -> Settings -> Connectors -> Figma -> Connect, approve
+       access, then start a new Claude Code session (or run /mcp) so the
+       Figma tools load; or
+     - run the local Figma Dev Mode MCP server
+       (see figma-to-html/quickstart.md).
+   Until one of these is connected, Claude cannot read the design.
+
+D. (Optional) Provide Divi source
+   Zips of the site's Divi theme and any Divi extension plugins. Moves more
+   sections from Medium to High confidence.
+
+E. Start the conversion
+   Send Claude:
+     - the path to export.xml
+     - the Figma link
+     - Divi Library layout (default) or draft page?
+
+F. What happens next (no further input needed until import)
+
+   Step  Who     What
+   ----  ------  ----------------------------------------------------------
+   1     Claude  Mines the export: which modules/attributes the site
+                 really uses, and whether it is Divi 4 or Divi 5
+   2     Claude  Pulls each Figma section's text, images and screenshot;
+                 saves the images locally right away
+   3     Claude  Maps each section to a real module (High/Medium/Low)
+   4-5   Claude  Wires images and writes build-<page>.js, which produces
+                 and validates the .wxr.xml
+   6     Claude  Checks the build against the Figma screenshots
+   7     You     Tools -> Import -> WordPress, tick "Download and import
+                 file attachments", then send Claude a screenshot of the
+                 live result for a final comparison
+
+
+STEP-BY-STEP WORKFLOW
+-----------------------
+
+Step 0 — Pre-flight
+  - Confirm the WXR export and the Figma node link.
+  - Confirm the export contains Divi content, and note its format
+    (shortcode = Divi 4, block = Divi 5).
+
+Step 1 — Mine & catalog the export
+  Run:
+    node scripts/mine-divi-data.js export.xml --out catalog.txt
+
+  Lists every Divi layout (pages, posts, Library items, Theme Builder
+  layouts) as an outline of sections/rows/columns/modules. Each node has
+  a PATH (e.g. 1.0.0.2) that build scripts use to grab it, plus all its
+  attributes and content. The summary shows the module counts, every
+  attribute actually used per module (the site's real field list),
+  builder versions, presets, global-module links, the image URLs already
+  in use, and the highest post id.
+
+Step 2 — Pull the Figma design, per section
+  For each visually distinct section: structure (get_metadata), real
+  per-instance content (get_design_context), a screenshot
+  (get_screenshot), and every image downloaded IMMEDIATELY
+  (download_assets). Figma asset URLs expire.
+
+Step 3 — Map each Figma section to a real module
+    Figma pattern                    Divi module
+    -------------------------------- -------------------------------------
+    Heading + copy                   et_pb_text
+    Plain photo                      et_pb_image (src)
+    Icon/image + title + text card   et_pb_blurb
+    Button                           et_pb_button
+    CTA band                         et_pb_cta, or section + text + button
+    FAQ / accordion                  et_pb_accordion > et_pb_accordion_item
+    Independent expanders            et_pb_toggle
+    Tabs                             et_pb_tabs > et_pb_tab
+    Background-photo band            et_pb_section with background_image
+    Full-width hero                  et_pb_fullwidth_header (fullwidth section)
+    Raw HTML / embed                 et_pb_code
+
+  Resolve each by the ground-truth hierarchy, in order:
+    1. A real instance in catalog.txt — clone it.
+    2. Real Divi / extension source (if supplied).
+    3. A Divi core module with content-only attributes (styling falls
+       back to the site's defaults/presets).
+    4. Code-module fallback (native <details> accordion etc.).
+  Each section gets a High / Medium / Low confidence label, reported at
+  the end, not asked about mid-way.
+
+Step 4 — Images
+  Divi modules point at images by URL. A Figma URL left in the layout
+  works for a few days and then shows an empty box. So every new image
+  URL gets a matching WXR attachment item with the IDENTICAL URL. At
+  import, WordPress downloads it into the Media Library and rewrites the
+  URL in the layout to the local copy. The validator refuses to finish a
+  build that has an image URL with no attachment.
+
+Step 5 — Build
+  A build-<section>.js in your PROJECT folder:
+    1. Load the export's layouts and site header.
+    2. Clone real sections/rows/modules by catalog path.
+    3. Override only content (text, links, images, colors Figma changes).
+       Clones are automatically unlinked from global Library items.
+    4. Serialize, wrap in a WXR item (+ attachment items), write the file.
+    5. Validate. This checks the XML, an exact parse round-trip, the grid
+       structure (rows in sections, modules in columns, column widths add
+       up), the image rule, and the Divi builder flag.
+
+Step 6 — Final visual check (don't skip)
+    [ ] Every card/block's image is set and has an attachment
+    [ ] Hover/reveal treatments present where Figma shows them (or flagged)
+    [ ] Background photos on the right sections
+    [ ] Typography sizes/colors match (including tablet/phone variants)
+    [ ] Button styles match
+    [ ] Accordions/toggles/tabs are real modules, not static text
+    [ ] No leftover copy, alt text or links from the cloned source
+    [ ] No duplicated placeholder text across repeated cards
+    [ ] No fabricated content where Figma was ambiguous (flag instead)
+
+  Known limitation: there's no WordPress instance here to render the real
+  Divi output. This check reads the build against the Figma screenshot. A
+  live screenshot after import is what closes the loop.
+
+Step 7 — Handoff
+  You'll receive:
+    1. The .wxr.xml file path.
+    2. Import steps: Tools -> Import -> WordPress, map or skip the author,
+       TICK "Download and import file attachments". Then either
+       Divi -> Divi Library (use it on a page via Add From Library ->
+       Your Saved Layouts), or open the imported draft page.
+    3. The section -> module -> source -> confidence table.
+    4. Any approximations made and why.
+    5. Every new image: attachment id, URL, local backup path.
+    6. A warning to import soon if any image URL is Figma-hosted.
+    7. Validator warnings, if any.
+    8. An offer to review a live screenshot once you've imported it.
+
+
+GOOD TO KNOW
+-------------
+Lessons from real runs:
+- Figma image links last about 7 days. Import the file within that window,
+  with "Download and import file attachments" ticked.
+- WordPress blocks SVG uploads by default, so small icons (arrows, phone,
+  service icons, stars) go into the layout's stylesheet as inline images
+  rather than into the Media Library. Photos still become attachments.
+- Figma SVG exports of a single icon include a gray backdrop and the whole
+  page behind it. These are stripped before use.
+- The site header, top bar and footer come from the Divi theme / Theme
+  Builder, not the page. A homepage conversion covers the page content
+  only; header and footer changes are a separate job.
+- Where Figma is missing content (collapsed FAQ answers, pages that don't
+  exist yet), Claude uses real site content where it can and flags
+  everything else in the handoff for you to confirm.
+- A Divi Library layout goes live only when you add it to a page. Nothing
+  on the site changes at import time.
+
+- Divi 4 attribute values never contain raw " [ ] \ characters. Divi
+  writes %22 %91 %93 %92 instead, and the helpers encode this for you.
+  Never hand-write shortcode strings.
+- Many attributes pack several values: padding "40px||40px||true|false",
+  fonts "Poppins|600|||||||", plus _tablet/_phone/__hover variants. Copy
+  the exact shape from a mined instance.
+- Presets (_module_preset) and global colors (gcid-...) are stored in the
+  site's settings, not in the export. They already exist on the target
+  site, so cloned nodes keep them.
+- Global modules: a clone of a global Library item would stay linked to
+  it (editing one edits all). The helpers strip that link by default.
+- Divi 5 sites: build by cloning mined divi/* blocks. Divi 4 shortcode
+  output is only a fallback there.
+
+
+QUICK REFERENCE — FILES IN THIS SKILL
+---------------------------------------
+  scripts/wxr-helpers.js     Core library: mine layouts, parse/serialize
+                             Divi 4 shortcodes and Divi 5 blocks, clone
+                             and edit nodes, render WXR items,
+                             attachments and documents, validate output.
+  scripts/mine-divi-data.js  CLI used in Step 1 to generate catalog.txt.
+
+
+FAQ
+----
+Q: Do I need to re-export every time?
+A: No — only for a different site, or after its Divi content changes.
+
+Q: Library item or page?
+A: Library item by default. It imports without touching any live page and
+   can be added to any page from the builder. Ask for a page if you want
+   a draft page instead.
+
+Q: What if there's no module for something in the design?
+A: It gets folded into a field already proven to accept HTML (e.g. a
+   5-star rating as ★ characters in a text module) and flagged in the
+   handoff.
+
+Q: Can I run this against a live site instead of an export file?
+A: No — the WXR export is required as the source of real node examples.
