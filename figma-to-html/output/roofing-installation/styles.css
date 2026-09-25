@@ -1,0 +1,746 @@
+/* ==========================================================================
+   Roofing Installation in Newport, OR — body sections
+   Rebuilt from Figma file 96nVKMwdMtneBy9Nr1uoCz, frame 7774:440 (1440 x 8558).
+   Header (7774:466), hero (7774:443/444/449) and footer (7774:832) are out of
+   scope and are not styled here.
+
+   Starting point: the sibling pages' stylesheets
+   (output/roofing-services-body/ and output/asphalt-roof-installation-newport/).
+   Every reused token and component was re-checked against this page's own
+   nodes; get_variable_defs returns an empty set for this frame too, so the
+   literal Figma values are promoted to custom properties here. Components the
+   sibling pages have but this page does not use are dropped rather than
+   carried over as dead CSS.
+
+   Differences this page introduces, all measured:
+     - a solid --ink full-bleed section (Rectangle 5) that butts straight
+       against the tinted section above it with no white gap;
+     - .btn--gradient returns (Frame 24), with a border Figma adds here;
+     - the process timeline is three cards in a row under two dashed arches,
+       not the 2x2 snake used on the asphalt page;
+     - its own gradient angles (159.04deg section, 142.69deg step cards).
+   ========================================================================== */
+
+:root {
+  /* ---- colour ---- */
+  --ink: #1e2d3b;
+  --ink-deep: #212b3d;
+  --blue: #5772a3;
+  --white: #ffffff;
+  --text-muted: rgba(30, 45, 59, 0.8);
+  --text-muted-inverse: rgba(255, 255, 255, 0.8);
+  --line: rgba(30, 45, 59, 0.2);
+  --line-inverse: rgba(255, 255, 255, 0.2);
+  --line-soft: rgba(87, 114, 163, 0.1);
+  --line-faint: rgba(255, 255, 255, 0.1);
+  --chip-bg: rgba(30, 45, 59, 0.1);
+  --chip-bg-inverse: rgba(255, 255, 255, 0.1);
+  --surface-tint: rgba(87, 114, 163, 0.1);
+  --image-placeholder: #d9d9d9;
+  --number-ghost: rgba(255, 255, 255, 0.2);
+  --number-ghost-inverse: rgba(30, 45, 59, 0.2);
+
+  /* ---- radii ---- */
+  --radius-card: 16px;
+  --radius-chip: 34px;
+  --radius-pill: 56px;
+  --radius-arch: 94px;
+
+  /* ---- spacing ---- */
+  --container-max: 1312px;      /* 1280px content + 2 x 16px gutter */
+  --section-y: 100px;           /* inside a full-bleed section's background */
+  --section-gap: 50px;          /* half of the 100px white gap between blocks */
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-16: 16px;
+  --space-17: 17px;
+  --space-24: 24px;
+  --space-25: 25px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-60: 60px;
+  --space-80: 80px;
+
+  /* ---- type ---- */
+  --font-heading: "Garet", "Nunito", "Trebuchet MS", sans-serif;
+  --font-body: "Spartan", "League Spartan", "Helvetica Neue", Arial, sans-serif;
+  --fs-h2: clamp(28px, 2.5vw, 36px);        /* = 36px at 1440 */
+  --fs-h3: clamp(20px, 1.667vw, 24px);      /* = 24px at 1440 */
+  --fs-lead: clamp(19px, 1.667vw, 24px);    /* = 24px at 1440 */
+  --fs-number: clamp(44px, 4.44vw, 64px);   /* = 64px at 1440 */
+  --fs-body: 16px;
+  --fs-eyebrow: 14px;
+  --lh: 1.3;
+  --tracking-eyebrow: 2.1px;
+
+  /* ---- gradients ---- */
+  /* Frame 50 + Frame 41: light tint laid over white. */
+  --grad-section-light: linear-gradient(180deg, rgba(30, 45, 59, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+  /* Frame 15 (7774:526), the process section. */
+  --grad-section-deep: linear-gradient(159.0407deg, #212b3d 28.357%, #5772a3 124.65%);
+  /* Frame 70 (7774:1191). */
+  --grad-section-band: linear-gradient(180deg, #1e2d3b 0%, #5772a3 100%);
+  /* Process step cards: translucent default, solid for the highlighted step. */
+  --grad-step: linear-gradient(142.6904deg, rgba(255, 255, 255, 0.1) 28.357%, rgba(87, 114, 163, 0.1) 124.65%);
+  --grad-step-light: linear-gradient(142.6904deg, #ffffff 28.357%, #5772a3 124.65%);
+  /* Frame 24's primary button. */
+  --grad-button: linear-gradient(90deg, #5772a3 0%, #1e2d3b 100%);
+  /* CTA band scrim over the photograph. */
+  --grad-cta-scrim: linear-gradient(to left, rgba(30, 45, 59, 0) 0%, #1e2d3b 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; }
+
+/* --------------------------------------------------------------------------
+   Section shells
+
+   Figma stacks this page as: block, 100px of page white, block, ... Blocks
+   that carry their own full-bleed background additionally pad inside that
+   background. So every section owns half of each white gap (50px of padding),
+   and a full-bleed section pushes that half-gap out as margin so its
+   background starts exactly where the fill starts in Figma.
+   -------------------------------------------------------------------------- */
+
+.section { padding: var(--section-gap) 0; }
+
+/* Full-bleed background sections: white half-gaps outside, padding inside. */
+.section--bleed {
+  margin: var(--section-gap) 0;
+  padding: var(--section-y) 0;
+}
+
+/* Frame 50's tint and Rectangle 5's solid fill butt together at y=1823 with
+   no white between them, so the half-gaps at that junction are removed. */
+.section--flush-bottom { margin-bottom: 0; }
+.section--flush-top { margin-top: 0; }
+
+/* Centers a section's content within the page's max content width instead of
+   relying on section padding to fake the inset — section backgrounds stay
+   full-bleed, the container handles horizontal centering. */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: var(--space-16);
+  padding-right: var(--space-16);
+}
+
+.section--tinted {
+  background-color: var(--white);
+  background-image: var(--grad-section-light);
+}
+
+.section--solid { background-color: var(--ink); }
+
+.section--deep { background-image: var(--grad-section-deep); }
+
+.section--gradient-band {
+  background-image: var(--grad-section-band);
+  border: 1px solid var(--line-soft);
+}
+
+/* The lead paragraph sits 80px below the hero (7774:465 at y=880). */
+.section--intro { padding-top: var(--space-80); }
+
+/* Rectangle 5 insets its content 80px, not the usual 100px; Figma leaves 82px
+   under it to make the fill exactly 845px tall. */
+.section--inset-80 { padding: var(--space-80) 0 82px; }
+
+/* Last block before the (out-of-scope) footer keeps its full 100px. */
+.section--last { padding-bottom: var(--section-y); }
+
+/* Sections that stack a centred header above a body block. */
+.section--stack .container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--space-24));
+}
+
+.section--gap-40 { --stack-gap: var(--space-40); }
+
+/* --------------------------------------------------------------------------
+   Shared building blocks
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 12px var(--space-16);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  background: var(--chip-bg);
+  color: var(--ink);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  /* Figma trims the eyebrow's text box to the cap height (12px) inside a 38px
+     pill: 12px + 2 x 12px padding + 2 x 1px border. A CSS line-height of 1
+     would make the box 14px and the pill 40px. */
+  line-height: 12px;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.chip--inverse {
+  background: var(--chip-bg-inverse);
+  border-color: var(--line-inverse);
+  color: var(--white);
+}
+
+/* "Getting started" keeps the dark border in the design. */
+.section--gradient-band .chip--inverse { border-color: var(--line); }
+
+.section__title {
+  margin: 0;
+  max-width: var(--title-max, none);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h2);
+  line-height: var(--lh);
+  color: var(--ink);
+}
+
+.section__title--inverse { color: var(--white); }
+
+/* Figma fixes a width on most heading text nodes; keeping it preserves the
+   intended line breaks at 1440px. Headings not listed here fill their column. */
+#new-roof-title       { --title-max: 569px; }
+#approach-title       { --title-max: 690px; }
+#roof-system-title    { --title-max: 524px; }
+#process-title        { --title-max: 694px; }
+#coastal-title        { --title-max: 524px; }
+#before-work-title    { --title-max: 538px; }
+#faq-title            { --title-max: 371px; }
+
+.section__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.section__head--center {
+  align-items: center;
+  text-align: center;
+}
+
+.prose__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.prose__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-17);
+  color: var(--text-muted);
+}
+
+.prose__body p { margin: 0; }
+
+/* Frame 24 sits on the solid --ink fill and uses full-strength white copy. */
+.prose__body--inverse { color: var(--white); }
+
+.inline-link {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.inline-link:hover { color: var(--ink-deep); }
+
+/* On the dark fill the blue would go muddy, so lift it toward white instead. */
+.prose__body--inverse .inline-link:hover { color: var(--white); }
+
+/* Pill buttons rendered as links (all of these navigate). */
+.btn {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-10);
+  padding: var(--space-16) var(--space-24);
+  border-radius: var(--radius-pill);
+  color: var(--white);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
+}
+
+.btn__icon { display: block; transition: transform 0.2s ease; }
+
+.btn:hover .btn__icon,
+.btn:focus-visible .btn__icon { transform: translateX(3px); }
+
+/* Frame 24's "Request a quote". */
+.btn--gradient {
+  background-image: var(--grad-button);
+  border: 1px solid var(--line-faint);
+  filter: drop-shadow(0 4px 12px rgba(30, 45, 59, 0.24));
+}
+
+.btn--gradient:hover,
+.btn--gradient:focus-visible { filter: brightness(1.12) drop-shadow(0 4px 12px rgba(30, 45, 59, 0.24)); }
+
+/* The CTA band's "Request a quote". */
+.btn--primary {
+  background: var(--blue);
+  border: 1px solid var(--line-soft);
+  filter: drop-shadow(0 4px 4px rgba(30, 45, 59, 0.16));
+}
+
+.btn--primary:hover,
+.btn--primary:focus-visible { background: var(--ink); }
+
+.btn--ghost { border: 1px solid var(--white); }
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+  background: var(--white);
+  color: var(--ink);
+}
+
+/* icon-arrow-right.svg is drawn with a hardcoded stroke="white" (not
+   currentColor), so it has to be inverted once the hover fill goes white. */
+.btn--ghost:hover .btn__icon,
+.btn--ghost:focus-visible .btn__icon { filter: invert(1); }
+
+.btn:focus-visible,
+.inline-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* Figma's "Frame 28" pair — used by both Frame 24 and the CTA band. */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+}
+
+/* --------------------------------------------------------------------------
+   1. Intro lead paragraph  (7774:465)
+   -------------------------------------------------------------------------- */
+
+.intro__lead {
+  margin: 0 auto;
+  max-width: 1015px;
+  font-size: var(--fs-lead);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-align: center;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   2, 3, 5, 7. Copy-beside-image blocks
+   -------------------------------------------------------------------------- */
+
+.media-split {
+  display: flex;
+  align-items: center;
+  gap: var(--split-gap, var(--space-60));
+}
+
+/* Frame 24 is the one block Figma spaces at 71px. */
+.media-split--gap-71 { --split-gap: 71px; }
+
+.media-split__text {
+  flex: 0 1 var(--text-col, 576px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.media-split__text--609 { --text-col: 609px; }
+.media-split__text--602 { --text-col: 602px; }
+
+.media-split__media {
+  position: relative;
+  flex: 0 0 var(--media-w, 620px);
+  margin: 0;
+  height: 550px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--image-placeholder);
+}
+
+/* Frame 24's photo is 600px wide and stretches to the copy column's height. */
+.media-split__media--stretch {
+  align-self: stretch;
+  height: auto;
+  --media-w: 600px;
+}
+
+/* Figma crops some fills by offsetting and scaling them inside the frame; the
+   percentages below are the literal values from those nodes, so the visible
+   portion of each photo matches the design at any width. Frame 50's and
+   Frame 68's fills are uncropped and need no entry. */
+.media-split__media img {
+  position: absolute;
+  left: var(--img-x, 0);
+  top: var(--img-y, 0);
+  display: block;
+  width: var(--img-w, 100%);
+  height: var(--img-h, 100%);
+  max-width: none;
+  object-fit: cover;
+}
+
+#new-roof-photo { --img-x: -12.92%; --img-w: 171.23%; }
+#coastal-photo  { --img-x: -0.07%; --img-y: -17.58%; --img-w: 156.72%; --img-h: 117.53%; }
+
+/* --------------------------------------------------------------------------
+   4. Approach — bordered tinted copy panel  (Frame 41, 7774:999)
+   -------------------------------------------------------------------------- */
+
+.copy-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-25);
+  padding: var(--section-y) 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  background-color: var(--white);
+  background-image: var(--grad-section-light);
+}
+
+/* --------------------------------------------------------------------------
+   4 & 8. Centred running copy
+   -------------------------------------------------------------------------- */
+
+.centered-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-17);
+  text-align: center;
+}
+
+.centered-copy p {
+  margin: 0;
+  max-width: var(--copy-max, 838px);
+  font-weight: 500;
+  color: var(--copy-colour, var(--text-muted));
+}
+
+.centered-copy--inverse { --copy-colour: var(--text-muted-inverse); }
+
+/* Per-paragraph widths read off the Figma text nodes. */
+.centered-copy p.copy--765 { --copy-max: 765px; }
+
+/* --------------------------------------------------------------------------
+   6. Installation process timeline  (Frame 15 / Group 7, 7774:526)
+
+   Three step cards in a row, sitting 70px below a pair of dashed, pill-shaped
+   outlines whose tops read as arches linking card 1 -> 2 -> 3. The arches are
+   purely decorative, so they live in an aria-hidden element behind the cards.
+   -------------------------------------------------------------------------- */
+
+.process-flow {
+  position: relative;
+  padding-top: 70px;
+}
+
+.process-flow__arches {
+  position: absolute;
+  top: 0;
+  /* 190px inset and 2 x 450px wide on the 1280px grid. */
+  left: 14.84375%;
+  display: flex;
+  width: 70.3125%;
+  /* The pills are 120px tall but Figma shows only the 70px that sits above the
+     cards — the lower 50px is hidden, not merely tinted by the cards'
+     translucent fill. Clipping here reproduces that exactly. */
+  height: 70px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.process-flow__arches span {
+  flex: 1 1 0;
+  height: 120px;
+  border: 1px dashed var(--white);
+  border-radius: var(--radius-arch);
+}
+
+.process-grid {
+  position: relative; /* paints above the arches */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-24);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.process-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  /* 32px, plus room for the absolutely placed step number below the copy. */
+  padding: var(--space-32) var(--space-32) 108px;
+  min-height: 540px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background-image: var(--grad-step);
+  color: var(--white);
+}
+
+/* Step 02 is the highlighted card: solid white-to-blue fill, dark type. */
+.process-step--light {
+  background-image: var(--grad-step-light);
+  color: var(--ink);
+}
+
+.process-step__title {
+  margin: 0;
+  max-width: var(--title-max, none);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  color: inherit;
+}
+
+/* Figma holds this title to 261px so it breaks over two lines like the others. */
+#step-3-title { --title-max: 261px; }
+
+.process-step__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--step-body-gap, var(--space-16));
+  color: var(--text-muted-inverse);
+}
+
+.process-step--light .process-step__body {
+  color: inherit;
+  --step-body-gap: var(--space-8);
+}
+
+.process-step__body p { margin: 0; }
+
+.process-step__number {
+  position: absolute;
+  left: var(--space-32);
+  bottom: 25px;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-number);
+  line-height: var(--lh);
+  color: var(--number-ghost);
+}
+
+.process-step--light .process-step__number { color: var(--number-ghost-inverse); }
+
+/* --------------------------------------------------------------------------
+   9. CTA band  (Rectangle 11 + Frame 46, 7774:771 / 7774:772)
+   -------------------------------------------------------------------------- */
+
+.cta-band {
+  display: flex;
+  align-items: center;
+  min-height: 500px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background-color: var(--ink);
+  background-image: var(--grad-cta-scrim), url("assets/cta-newport-coastline.png");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.cta-band__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-25);
+  width: 100%;
+  max-width: 769px; /* 609px of content + 2 x 80px padding */
+  padding: var(--space-80);
+}
+
+.cta-band__copy {
+  margin: 0;
+  max-width: 609px;
+  color: var(--white);
+}
+
+/* --------------------------------------------------------------------------
+   10. FAQs  (Frame 51, 7774:788)
+   -------------------------------------------------------------------------- */
+
+.faq {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.faq__intro {
+  flex: 0 0 424px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.faq__list {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.faq__item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-tint);
+}
+
+.faq__question { margin: 0; }
+
+.faq__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-16);
+  width: 100%;
+  padding: var(--space-32);
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.faq__toggle:hover { color: var(--blue); }
+
+.faq__toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -4px;
+  border-radius: var(--radius-card);
+}
+
+.faq__question-text { flex: 1 1 auto; }
+
+.faq__icon {
+  display: block;
+  flex: none;
+  transition: transform 0.2s ease;
+}
+
+.faq__toggle:hover .faq__icon { transform: scale(1.1); }
+
+.faq__toggle[aria-expanded="true"] .faq__icon--open { display: none; }
+.faq__toggle[aria-expanded="false"] .faq__icon--close { display: none; }
+
+.faq__panel { padding: 0 var(--space-32) var(--space-32); }
+
+.faq__answer {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.faq__answer--placeholder {
+  font-style: italic;
+  opacity: 0.65;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive — 1440px is the only width Figma supplied for this page, so it is
+   the only width verified against real design data. Everything below is
+   inferred fluid behaviour, using the same 1180 / 900 / 640 thresholds as the
+   two sibling pages.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .media-split {
+    flex-wrap: wrap;
+    --split-gap: var(--space-40);
+  }
+
+  .media-split__text {
+    flex: 1 1 100%;
+    --text-col: auto;
+  }
+
+  .media-split__media {
+    flex: 1 1 100%;
+    height: clamp(280px, 40vw, 550px);
+  }
+
+  .media-split__media--stretch {
+    align-self: auto;
+    height: clamp(300px, 46vw, 683px);
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --section-y: 64px;
+    --section-gap: 32px;
+    --space-80: 48px;
+    --space-60: 40px;
+  }
+
+  .section--inset-80 { padding: var(--space-80) 0; }
+
+  .copy-panel { padding: var(--section-y) var(--space-32); }
+
+  /* Three 540px-tall cards get too narrow to read much below this, so they
+     stack and the arches — which only describe the 3-across flow — go. */
+  .process-flow { padding-top: 0; }
+  .process-flow__arches { display: none; }
+  .process-grid { grid-template-columns: 1fr; }
+  .process-step { min-height: 0; }
+  #step-3-title { --title-max: none; }
+
+  .faq { flex-wrap: wrap; gap: var(--space-32); }
+  .faq__intro,
+  .faq__list { flex: 1 1 100%; }
+
+  .cta-band { min-height: 0; }
+  .cta-band__content { padding: var(--space-40); }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --section-y: 48px;
+    --space-32: 24px;
+  }
+
+  .process-step { padding-bottom: 92px; }
+  .process-step__number { bottom: 20px; }
+
+  .cta-band__content { padding: var(--space-32); }
+}

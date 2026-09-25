@@ -1,0 +1,275 @@
+FIGMA -> BEAVER BUILDER (WXR) SKILL — USER GUIDE
+=================================================
+
+WHAT THIS SKILL DOES
+---------------------
+Converts a Figma design (a section or page) into a standalone, importable
+WordPress WXR file (.xml) containing a Beaver Builder page/template.
+Every row, column, and module it generates is either:
+
+  - a deep clone of a real node already working on the target site (mined
+    from that site's own WordPress export), or
+  - when no real instance exists, built from the actual plugin source code
+    (Beaver Builder core, PowerPack Elements, UABB/Ultimate Addons) — never
+    a hand-guessed settings schema.
+
+Trigger phrases: "Beaver Builder", "PowerPack", "UABB / Ultimate Addons",
+"fl-builder-template", or "convert this Figma design into a WordPress
+import".
+
+Runtime: Node.js only (no PHP CLI needed/used).
+
+
+REQUIREMENTS & NECESSARY PACKAGES
+----------------------------------
+Runtime:
+  - Node.js (any recent LTS) — everything runs via `node`, never `php`.
+    There's no PHP dependency even though the data being manipulated is
+    PHP's serialization format.
+
+npm packages (installed inside the skill's scripts/ folder, already
+declared in scripts/package.json):
+
+  Package            Version   Why
+  ------------------ --------- --------------------------------------------
+  php-serialize      ^5.1.3    Reads/writes Beaver Builder's
+                                _fl_builder_data field, which WordPress
+                                stores as PHP's native serialize() format.
+  fast-xml-parser    ^5.10.0   Parses/validates the WXR (.xml) export and
+                                output files.
+
+Install once with:
+  cd scripts
+  npm install
+
+(node_modules/ is already vendored in this copy of the skill, so this is
+only needed if it's missing or you're setting the skill up fresh elsewhere.)
+
+Access / integration requirements:
+  - Figma MCP access in Claude (the get_metadata, get_design_context,
+    get_screenshot, download_assets tools) — used in Step 2 to pull real
+    design content; not a separate package to install.
+  - WordPress admin access on the target site, to generate the WXR export
+    (Tools -> Export -> All content) and later to import the result
+    (Tools -> Import -> WordPress).
+  - (Optional, improves accuracy) the site's actual plugin/theme source,
+    unzipped — bb-plugin/, bbpowerpack/, bb-ultimate-addon/, bb-theme/,
+    bb-theme-builder/ — or at minimum the free Beaver Builder Lite zip for
+    core-module verification.
+
+No PHP CLI, database access, or live WordPress connection is required to
+GENERATE the file — only to export from and later import into the site.
+
+
+WHAT YOU NEED BEFORE STARTING
+-------------------------------
+1. A WXR export from the target WordPress site (Tools -> Export -> All
+   content in wp-admin). The only source of real, working nodes to clone —
+   nothing else works without it.
+2. A Figma URL with a node-id= parameter, pointing at the exact
+   section/page to convert.
+3. scripts/node_modules/ installed (run `npm install` inside scripts/ if
+   missing — needs php-serialize, fast-xml-parser).
+4. (Optional but ideal) The site's actual plugin/theme source, unzipped:
+   bb-plugin/, bbpowerpack/, bb-ultimate-addon/, bb-theme/,
+   bb-theme-builder/ — best possible ground truth for any module not
+   already present in the export.
+
+If you don't have #1 or #2, the process stops immediately and asks for
+them — everything else is designed to run to completion without further
+mid-build questions.
+
+
+STEP-BY-STEP WORKFLOW
+-----------------------
+
+Step 0 — Pre-flight checks
+  - Confirm you have the WXR export and the Figma node link.
+  - Confirm the export actually contains at least one fl-builder-template
+    post (otherwise there's nothing to clone from).
+  - `cd scripts && npm install` if node_modules/ isn't there yet.
+
+Step 1 — Mine & catalog the export
+  Run:
+    node scripts/mine-fl-builder-data.js export.xml --out catalog.txt
+
+  This prints every real row / column-group / column / module found in the
+  site's own Beaver Builder templates, plus counts per module type (e.g.
+  "info-box x16, pp-heading x8"). catalog.txt becomes the single source of
+  truth for what modules/fields actually exist on this site — never invent
+  one that isn't in here (or confirmed in real plugin source).
+
+Step 2 — Pull the Figma design, per section
+  Treat each visually distinct pattern (hero, card grid, CTA band, FAQ
+  list) as its own section. For each one:
+    1. Get the node structure/tree (get_metadata).
+    2. Get the real per-instance text, image URLs, colors, overrides
+       (get_design_context) — a repeated card component shares one name in
+       Figma, but each instance has its own overridden content, so
+       metadata alone isn't enough.
+    3. Get a screenshot for later visual comparison (get_screenshot).
+    4. Download every image IMMEDIATELY to
+       <project>/<section-name>-images/ (download_assets) — Figma's asset
+       URLs are short-lived.
+
+Step 3 — Map each Figma section to a real module
+  Work out which real Beaver Builder/PowerPack/UABB module each section
+  should become. Check known patterns first:
+
+    Figma pattern                                   Real module              Source
+    ------------------------------------------------ ------------------------ --------
+    Card grid, hover reveals title+description       interactive-banner-2    UABB
+    over image                                        (banner_style: style1)
+    Plain photo, no hover/overlay                     pp-image (photo_src)    PowerPack
+    FAQ/accordion list                                uabb-faq                UABB
+                                                       (faq_layout: accordion)
+    Full-bleed section with background photo          row/column with        Core
+                                                       bg_type: photo, cloned
+                                                       from a real background-
+                                                       photo node
+
+  For anything else, resolve it by walking this ground-truth hierarchy (in
+  order, stop at the first success):
+    1. A real instance already in catalog.txt — clone it.
+    2. Real plugin/theme source (if supplied) — read the module's own
+       render code and settings field list.
+    3. The free Beaver Builder Lite zip (core modules only).
+    4. HTML-module fallback (flHtmlModule + flAccordionHtml) — only if 1–3
+       all fail.
+
+  Each section gets a confidence label — High (real instance or confirmed
+  source), Medium (a real instance exists but one behavior like an image
+  field is unconfirmed), or Low (built on HTML fallback/assumptions). This
+  never blocks the build — it's reported at the end, not asked about
+  mid-way.
+
+Step 4 — Audit images & wire attachments
+  For every new image, check whether its target field needs a real WXR
+  <attachment> item:
+
+    Field                                    Needs an attachment?
+    ----------------------------------------- ---------------------
+    interactive-banner-2.banner_image         Yes, mandatory
+    info-box.photo (when used)                Yes, mandatory
+    row.bg_image / column.bg_image            No
+    pp-image.photo_src                        No
+
+  If required: pick an unused post_id, render an <attachment> item with
+  that id and the live source URL, and set the module's id field to that
+  same post_id (as a string, not the URL). This is enforced
+  automatically — the build validator throws if an image field is set
+  without its matching attachment id.
+
+Step 5 — Build
+  A build-<section>.js script (written in your PROJECT folder, not the
+  skill folder) does the actual assembly:
+    1. Load real node trees from the export.
+    2. Pull the specific real nodes to clone (found via catalog.txt).
+    3. Deep-clone each one, generate a fresh id, and override only the
+       content fields (text/colors/images/links) — leave structural fields
+       alone unless Figma explicitly differs.
+    4. For any brand-new module with no real instance to clone, use the
+       provided blank-typography/blank-border helpers and confirm real
+       field shapes in catalog.txt first.
+    5. Serialize the tree (never hand-build the serialized string).
+    6. Wrap it in a WXR <item>, plus one <attachment> item per new image
+       that needs one.
+    7. Wrap everything into one final WXR document.
+    8. Validate — this runs automatically and checks the XML is
+       well-formed, every settings blob round-trips correctly, and no
+       image field is missing its attachment id.
+
+Step 6 — Final visual check (don't skip)
+  Compare the build against each section's Figma screenshot:
+    [ ] Every card/block's image is actually loaded
+    [ ] Hover/reveal treatments present where Figma shows them
+    [ ] Background photos are correct and not bleeding from another section
+    [ ] Typography sizes/colors match
+    [ ] Button styles match (filled vs outline, hover states)
+    [ ] Interactive elements actually work (accordion expands, etc.) — not
+        just static text
+    [ ] No duplicated placeholder text across repeated cards
+    [ ] No fabricated content where Figma was ambiguous (flag instead)
+
+  Known limitation: there's no way to render real Beaver Builder output
+  from this workflow — no WordPress instance to import into. This check is
+  a careful read of the build script's output against the Figma
+  screenshot, not a pixel diff. A live screenshot after import is what
+  actually closes the loop.
+
+Step 7 — Handoff
+  You'll receive:
+    1. The .wxr.xml file path.
+    2. Import instructions: Tools -> Import -> WordPress on the target
+       site (map or skip the author). Attachments with a live source URL
+       are downloaded automatically by WordPress at import time.
+    3. The section -> module -> source -> confidence mapping table.
+    4. Any approximations made and why.
+    5. Every new image's attachment wiring + local backup path.
+    6. A time-sensitivity warning if any image URL is Figma-hosted (import
+       soon before the link goes stale — recoverable via a fresh pull if
+       it does).
+    7. An offer to review a live screenshot once you've imported it.
+
+
+GOOD TO KNOW
+-------------
+- Five module sources exist — don't assume one from a prefix:
+    * Beaver Builder core (no prefix): photo, heading, html, button
+    * PowerPack (pp- prefix): pp-heading, pp-image, pp-faq
+    * UABB (no consistent prefix): info-box, interactive-banner-2,
+      uabb-faq — commonly confused with PowerPack; check the actual plugin
+      folder name to be sure.
+    * WordPress Widgets (wrapped by the core widget module)
+    * This site's own saved/global modules & templates
+- Interactive elements (accordions, tabs, toggles) must use a real
+  interactive module (e.g. UABB's uabb-faq) or the dependency-free
+  <details>/<summary> HTML fallback — never fake it with static info-boxes
+  that merely look like an accordion.
+- Nested settings fields (border, shadow, gradients, typography) aren't
+  always plain strings — the "unset" default is often '', and the real
+  populated shape only appears once you find a configured example in
+  catalog.txt. Always confirm the shape before writing into a nested
+  field.
+- No live-site mode — this workflow requires a WXR export as its source of
+  truth; it can't work directly against a live site.
+- Re-export only when needed — once per site, and again if that site's
+  Beaver Builder content changes later.
+- Multiple pages? You can dispatch one research pass per page in parallel
+  when re-auditing several already-built pages against Figma, and combine
+  multiple build-<page>.js outputs into one importable file with a
+  build-all-pages.js aggregator.
+
+
+QUICK REFERENCE — FILES IN THIS SKILL
+---------------------------------------
+  scripts/wxr-helpers.js       Core library: extract templates,
+                                clone/serialize nodes, render WXR
+                                items/attachments/documents, validate
+                                output.
+  scripts/mine-fl-builder-data.js  CLI used in Step 1 to generate
+                                    catalog.txt from a WXR export.
+
+
+FAQ
+----
+Q: Do I need to re-export every time?
+A: No — only when the site is different, or its Beaver Builder content
+   changed since your last export.
+
+Q: What if there's no matching module for something in the design (e.g. a
+   star rating, stat counter)?
+A: It gets folded into a field already proven to accept raw content (e.g.
+   a 5-star rating rendered as star characters in a heading field) rather
+   than guessing at an uninstalled plugin feature — and it's flagged in
+   the handoff.
+
+Q: What if a section can't be verified with high confidence and no plugin
+   source is available?
+A: It still gets built, falling through the ground-truth hierarchy down to
+   the HTML fallback if necessary, and is simply marked Low confidence in
+   the report — it won't block the build.
+
+Q: Can I run this against a live site instead of an export file?
+A: No — the WXR export is required as the source of real, provable node
+   examples.

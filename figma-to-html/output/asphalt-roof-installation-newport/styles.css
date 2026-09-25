@@ -1,0 +1,743 @@
+/* ==========================================================================
+   Asphalt Roof Installation in Newport, OR — body sections
+   Rebuilt from Figma file 96nVKMwdMtneBy9Nr1uoCz, frame 7774:1856 (1440 x 8973).
+   Header (7774:1884), hero (7774:1859/1860/1868) and footer (7774:2056) are
+   out of scope and are not styled here.
+
+   Starting point: the sibling page's stylesheet
+   (claude/figma-to-html/output/roofing-services-body/styles.css). Every token
+   and component reused below was re-checked against this page's own nodes;
+   get_variable_defs returns an empty set for this frame too, so the literal
+   Figma values are promoted to custom properties here. Components the sibling
+   page has but this page does not use (.collage, .card-grid, .card, .badge,
+   .panel, .link-arrow, .btn--gradient, .section__lead) are dropped rather than
+   carried over as dead CSS. New here: .copy-panel and the .process-grid /
+   .process-step timeline.
+   ========================================================================== */
+
+:root {
+  /* ---- colour ---- */
+  --ink: #1e2d3b;
+  --ink-deep: #212b3d;
+  --blue: #5772a3;
+  --white: #ffffff;
+  --text-muted: rgba(30, 45, 59, 0.8);
+  --text-muted-inverse: rgba(255, 255, 255, 0.8);
+  --line: rgba(30, 45, 59, 0.2);
+  --line-inverse: rgba(255, 255, 255, 0.2);
+  --line-soft: rgba(87, 114, 163, 0.1);
+  --chip-bg: rgba(30, 45, 59, 0.1);
+  --chip-bg-inverse: rgba(255, 255, 255, 0.1);
+  --surface-tint: rgba(87, 114, 163, 0.1);
+  --image-placeholder: #d9d9d9;
+  --number-ghost: rgba(255, 255, 255, 0.2);
+  --number-ghost-inverse: rgba(30, 45, 59, 0.2);
+
+  /* ---- radii ---- */
+  --radius-card: 16px;
+  --radius-chip: 34px;
+  --radius-pill: 56px;
+
+  /* ---- spacing ---- */
+  --container-max: 1312px;      /* 1280px content + 2 x 16px gutter */
+  --section-y: 100px;           /* inside a full-bleed section's background */
+  --section-gap: 50px;          /* half of the 100px white gap between blocks */
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-16: 16px;
+  --space-17: 17px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-60: 60px;
+  --space-80: 80px;
+
+  /* ---- type ---- */
+  --font-heading: "Garet", "Nunito", "Trebuchet MS", sans-serif;
+  --font-body: "Spartan", "League Spartan", "Helvetica Neue", Arial, sans-serif;
+  --fs-h2: clamp(28px, 2.5vw, 36px);        /* = 36px at 1440 */
+  --fs-h3: clamp(20px, 1.667vw, 24px);      /* = 24px at 1440 */
+  --fs-lead: clamp(19px, 1.667vw, 24px);    /* = 24px at 1440 */
+  --fs-number: clamp(44px, 4.44vw, 64px);   /* = 64px at 1440 */
+  --fs-body: 16px;
+  --fs-eyebrow: 14px;
+  --lh: 1.3;
+  --tracking-eyebrow: 2.1px;
+
+  /* ---- gradients ---- */
+  /* Frame 50 + Frame 41: light tint laid over white. */
+  --grad-section-light: linear-gradient(180deg, rgba(30, 45, 59, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+  /* Frame 15 (7774:1947), the process section. 151.625deg is this page's own
+     angle — the sibling page's deep sections use 153.98deg / 161.10deg. */
+  --grad-section-deep: linear-gradient(151.6249deg, #212b3d 28.357%, #5772a3 124.65%);
+  /* Frame 70 (7774:1992). */
+  --grad-section-band: linear-gradient(180deg, #1e2d3b 0%, #5772a3 100%);
+  /* Process step cards: translucent default, solid for the highlighted step. */
+  --grad-step: linear-gradient(var(--step-angle, 156.1362deg), rgba(255, 255, 255, 0.1) 28.357%, rgba(87, 114, 163, 0.1) 124.65%);
+  --grad-step-light: linear-gradient(156.1362deg, #ffffff 28.357%, #5772a3 124.65%);
+  /* CTA band scrim over the photograph. */
+  --grad-cta-scrim: linear-gradient(to left, rgba(30, 45, 59, 0) 0%, #1e2d3b 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; }
+
+/* --------------------------------------------------------------------------
+   Section shells
+
+   Figma stacks this page as: block, 100px of page white, block, 100px of page
+   white, ... Blocks that carry their own full-bleed background additionally
+   pad 100px inside that background. So every section owns half of each white
+   gap (50px of padding), and a full-bleed section pushes that half-gap out as
+   margin so its background starts exactly where the tint starts in Figma.
+   -------------------------------------------------------------------------- */
+
+.section { padding: var(--section-gap) 0; }
+
+/* Full-bleed background sections: white half-gaps outside, 100px inside. */
+.section--bleed {
+  margin: var(--section-gap) 0;
+  padding: var(--section-y) 0;
+}
+
+/* Centers a section's content within the page's max content width instead of
+   relying on section padding to fake the inset — section backgrounds stay
+   full-bleed, the container handles horizontal centering. */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: var(--space-16);
+  padding-right: var(--space-16);
+}
+
+.section--tinted {
+  background-color: var(--white);
+  background-image: var(--grad-section-light);
+}
+
+.section--deep { background-image: var(--grad-section-deep); }
+
+.section--gradient-band {
+  background-image: var(--grad-section-band);
+  border: 1px solid var(--line-soft);
+}
+
+/* The lead paragraph sits 80px below the hero (7774:1894 at y=880). */
+.section--intro { padding-top: var(--space-80); }
+
+/* The CTA band sits 81px below the block above it, not the usual 100px. */
+.section--cta { padding-top: var(--space-32); }
+
+/* Last block before the (out-of-scope) footer keeps its full 100px. */
+.section--last { padding-bottom: var(--section-y); }
+
+/* Sections that stack a centred header above a body block. */
+.section--stack .container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--space-24));
+}
+
+.section--gap-40 { --stack-gap: var(--space-40); }
+
+/* --------------------------------------------------------------------------
+   Shared building blocks
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 12px var(--space-16);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  background: var(--chip-bg);
+  color: var(--ink);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  /* Figma trims the eyebrow's text box to the cap height (12px) inside a 38px
+     pill: 12px + 2 x 12px padding + 2 x 1px border. A CSS line-height of 1
+     would make the box 14px and the pill 40px. */
+  line-height: 12px;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.chip--inverse {
+  background: var(--chip-bg-inverse);
+  border-color: var(--line-inverse);
+  color: var(--white);
+}
+
+/* "Preparing for installation" keeps the dark border in the design. */
+.section--gradient-band .chip--inverse { border-color: var(--line); }
+
+.section__title {
+  margin: 0;
+  max-width: var(--title-max, none);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h2);
+  line-height: var(--lh);
+  color: var(--ink);
+}
+
+.section__title--inverse { color: var(--white); }
+
+/* Figma fixes a width on some heading text nodes; keeping it preserves the
+   intended line breaks at 1440px. Headings not listed here fill their column. */
+#planning-title { --title-max: 730px; }
+#process-title { --title-max: 731px; }
+#before-install-title { --title-max: 534px; }
+#faq-title { --title-max: 371px; }
+
+.section__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.section__head--center {
+  align-items: center;
+  text-align: center;
+}
+
+.prose__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.prose__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--prose-body-gap, var(--space-17));
+  color: var(--text-muted);
+}
+
+.prose__body p { margin: 0; }
+
+/* Frame 71 spaces its two paragraphs 24px apart, not the usual 17px. */
+.prose__body--roomy { --prose-body-gap: var(--space-24); }
+
+.inline-link {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.inline-link:hover { color: var(--ink-deep); }
+
+/* The link inside the intro lead is the only one Figma does not re-weight —
+   it stays at the paragraph's own semibold. */
+.intro__lead .inline-link { font-weight: inherit; }
+
+.inline-link--inverse { color: var(--white); }
+.inline-link--inverse:hover { color: rgba(255, 255, 255, 0.75); }
+
+/* Pill buttons rendered as links (both of these navigate). */
+.btn {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-10);
+  padding: var(--space-16) var(--space-24);
+  border-radius: var(--radius-pill);
+  color: var(--white);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
+}
+
+.btn__icon { display: block; transition: transform 0.2s ease; }
+
+.btn:hover .btn__icon,
+.btn:focus-visible .btn__icon { transform: translateX(3px); }
+
+.btn--primary {
+  background: var(--blue);
+  border: 1px solid var(--line-soft);
+  filter: drop-shadow(0 4px 4px rgba(30, 45, 59, 0.16));
+}
+
+.btn--primary:hover,
+.btn--primary:focus-visible { background: var(--ink); }
+
+.btn--ghost { border: 1px solid var(--white); }
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+  background: var(--white);
+  color: var(--ink);
+}
+
+/* icon-arrow-right.svg is drawn with a hardcoded stroke="white" (not
+   currentColor), so it has to be inverted once the hover fill goes white. */
+.btn--ghost:hover .btn__icon,
+.btn--ghost:focus-visible .btn__icon { filter: invert(1); }
+
+.btn:focus-visible,
+.inline-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   1. Intro lead paragraphs  (7774:1894 + 7774:2117)
+   -------------------------------------------------------------------------- */
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.intro__lead {
+  margin: 0 auto;
+  max-width: 1015px;
+  font-size: var(--fs-lead);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-align: center;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   2, 4, 6, 7. Copy-beside-image blocks
+   -------------------------------------------------------------------------- */
+
+.media-split {
+  display: flex;
+  align-items: center;
+  gap: var(--space-60);
+}
+
+.media-split__text {
+  flex: 0 1 var(--text-col, 600px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+/* Frame 68's text column is 576px, not 600px, leaving 24px of trailing slack. */
+.media-split__text--narrow { --text-col: 576px; }
+
+.media-split__media {
+  position: relative;
+  flex: 0 0 620px;
+  margin: 0;
+  height: 550px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--image-placeholder);
+}
+
+/* Frame 68's photo stretches to the text column's height instead. */
+.media-split__media--stretch {
+  align-self: stretch;
+  height: auto;
+}
+
+/* Figma crops each fill by offsetting and scaling it inside the frame; the
+   percentages below are the literal values from the node, so the visible
+   portion of every photo matches the design at any width. */
+.media-split__media img {
+  position: absolute;
+  left: var(--img-x, 0);
+  top: var(--img-y, 0);
+  display: block;
+  width: var(--img-w, 100%);
+  height: var(--img-h, 100%);
+  max-width: none;
+  object-fit: cover;
+}
+
+/* Frame 68's fill is uncropped (left 0 / 100% x 100%), so it needs no entry. */
+#when-to-install-photo    { --img-x: -33.35%; --img-w: 133.34%; }
+#install-vs-replace-photo { --img-x: -53.66%; --img-y: -26.55%; --img-w: 168.14%; --img-h: 126.51%; }
+#coastal-photo            { --img-x: -19.58%; --img-w: 133.1%; }
+
+/* --------------------------------------------------------------------------
+   3. Planning — bordered tinted copy panel  (Frame 41, 7774:1926)
+   -------------------------------------------------------------------------- */
+
+.copy-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  padding: var(--section-y) 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  background-color: var(--white);
+  background-image: var(--grad-section-light);
+}
+
+/* --------------------------------------------------------------------------
+   3 & 8. Centred running copy
+   -------------------------------------------------------------------------- */
+
+.centered-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-17);
+  text-align: center;
+}
+
+.centered-copy p {
+  margin: 0;
+  max-width: var(--copy-max, 838px);
+  font-weight: 500;
+  color: var(--copy-colour, var(--text-muted));
+}
+
+.centered-copy--inverse { --copy-colour: var(--text-muted-inverse); }
+
+/* Per-paragraph widths read off the Figma text nodes. */
+.centered-copy p.copy--818 { --copy-max: 818px; }
+.centered-copy p.copy--768 { --copy-max: 768px; }
+.centered-copy p.copy--740 { --copy-max: 740px; }
+
+/* --------------------------------------------------------------------------
+   5. Installation process timeline  (Frame 92, 7779:2254)
+
+   Figma lays the four steps out as a snake: 01 -> 02 across the top row, then
+   down the right-hand side to 03, then back left to 04. The DOM keeps the
+   natural 1-2-3-4 reading order and grid placement produces the snake, so the
+   ordered list stays correct for assistive tech and for a linearised layout.
+
+   The 100px tracks between and below the cards are the lanes the dashed
+   connector vectors live in; they are drawn as backgrounds on decorative list
+   items so they add nothing to the accessibility tree.
+   -------------------------------------------------------------------------- */
+
+.process-grid {
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  grid-template-rows: auto 100px auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.process-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  /* 32px, plus room for the absolutely placed step number below the copy. */
+  padding: var(--space-32) var(--space-32) 108px;
+  min-height: 450px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background-image: var(--grad-step);
+  color: var(--white);
+}
+
+.process-step:nth-child(1) { grid-area: 1 / 1; }
+.process-step:nth-child(2) { grid-area: 1 / 3; }
+.process-step:nth-child(3) { grid-area: 3 / 3; --step-angle: 156.1452deg; }
+.process-step:nth-child(4) { grid-area: 3 / 1; --step-angle: 156.1452deg; }
+
+/* Step 02 is the highlighted card: solid white-to-blue fill, dark type. */
+.process-step--light {
+  background-image: var(--grad-step-light);
+  color: var(--ink);
+}
+
+.process-step__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  color: inherit;
+}
+
+.process-step__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--step-body-gap, var(--space-16));
+  color: var(--text-muted-inverse);
+}
+
+.process-step--light .process-step__body {
+  color: inherit;
+  --step-body-gap: var(--space-8);
+}
+
+.process-step__body p { margin: 0; }
+
+.process-step__number {
+  position: absolute;
+  left: var(--space-32);
+  bottom: 25px;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-number);
+  line-height: var(--lh);
+  color: var(--number-ghost);
+}
+
+.process-step--light .process-step__number { color: var(--number-ghost-inverse); }
+
+/* Decorative dashed connectors between consecutive steps. */
+.process-grid__link {
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.process-grid__link--across {
+  grid-area: 1 / 2;
+  background-image: url("assets/process-connector-right.svg");
+  background-size: 100% 146.5px;
+  background-position: center center;
+}
+
+.process-grid__link--down {
+  grid-area: 2 / 3;
+  background-image: url("assets/process-connector-down.svg");
+  background-size: 100% 100%;
+}
+
+.process-grid__link--back {
+  grid-area: 3 / 2;
+  background-image: url("assets/process-connector-left.svg");
+  background-size: 100% 146.5px;
+  background-position: center center;
+}
+
+/* --------------------------------------------------------------------------
+   9. CTA band  (Group 10, 7779:2290)
+   -------------------------------------------------------------------------- */
+
+.cta-band {
+  display: flex;
+  align-items: flex-start;
+  min-height: 500px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background-color: var(--ink);
+  background-image: var(--grad-cta-scrim), url("assets/cta-newport-coastline.png");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.cta-band__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  width: 100%;
+  max-width: 769px; /* 609px of content + 2 x 80px padding */
+  /* Figma fixes the band at 500px with the content top-anchored 80px down,
+     which leaves 66px under it rather than a symmetric 80px. */
+  padding: var(--space-80) var(--space-80) 66px;
+}
+
+.cta-band__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: 609px;
+  color: var(--white);
+}
+
+.cta-band__copy p { margin: 0; }
+
+.cta-band__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+}
+
+/* --------------------------------------------------------------------------
+   10. FAQs  (Frame 51, 7774:2018)
+   -------------------------------------------------------------------------- */
+
+.faq {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.faq__intro {
+  flex: 0 0 424px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.faq__list {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.faq__item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-tint);
+}
+
+.faq__question { margin: 0; }
+
+.faq__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-16);
+  width: 100%;
+  padding: var(--space-32);
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.faq__toggle:hover { color: var(--blue); }
+
+.faq__toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -4px;
+  border-radius: var(--radius-card);
+}
+
+.faq__question-text { flex: 1 1 auto; }
+
+.faq__icon {
+  display: block;
+  flex: none;
+  transition: transform 0.2s ease;
+}
+
+.faq__toggle:hover .faq__icon { transform: scale(1.1); }
+
+.faq__toggle[aria-expanded="true"] .faq__icon--open { display: none; }
+.faq__toggle[aria-expanded="false"] .faq__icon--close { display: none; }
+
+.faq__panel { padding: 0 var(--space-32) var(--space-32); }
+
+.faq__answer {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.faq__answer--placeholder {
+  font-style: italic;
+  opacity: 0.65;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive — 1440px is the only width Figma supplied for this page, so it is
+   the only width verified against real design data. Everything below is
+   inferred fluid behaviour, using the same 1180 / 900 / 640 thresholds as the
+   sibling Roofing Services page.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .media-split {
+    flex-wrap: wrap;
+    gap: var(--space-40);
+  }
+
+  .media-split__text {
+    flex: 1 1 100%;
+    --text-col: auto;
+  }
+
+  .media-split__media {
+    flex: 1 1 100%;
+    height: clamp(280px, 40vw, 550px);
+  }
+
+  .media-split__media--stretch {
+    align-self: auto;
+    height: clamp(280px, 42vw, 589px);
+  }
+
+  .process-grid { grid-template-columns: 1fr 60px 1fr; }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --section-y: 64px;
+    --section-gap: 32px;
+    --space-80: 48px;
+    --space-60: 40px;
+  }
+
+  .copy-panel { padding: var(--section-y) var(--space-32); }
+
+  .process-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    row-gap: var(--space-24);
+  }
+
+  .process-step { min-height: 0; }
+  .process-step:nth-child(1),
+  .process-step:nth-child(2),
+  .process-step:nth-child(3),
+  .process-step:nth-child(4) { grid-area: auto; }
+
+  /* The connectors only describe the 2x2 snake, so they go once it stacks. */
+  .process-grid__link { display: none; }
+
+  .faq { flex-wrap: wrap; gap: var(--space-32); }
+  .faq__intro,
+  .faq__list { flex: 1 1 100%; }
+
+  .cta-band {
+    min-height: 0;
+    align-items: center;
+  }
+
+  .cta-band__content { padding: var(--space-40); }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --section-y: 48px;
+    --space-32: 24px;
+  }
+
+  .process-step { padding-bottom: 92px; }
+  .process-step__number { bottom: 20px; }
+
+  .cta-band__content { padding: var(--space-32); }
+}

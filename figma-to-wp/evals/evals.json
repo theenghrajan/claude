@@ -1,0 +1,23 @@
+{
+  "skill_name": "figma-to-wp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're starting the GreenShine Cleaning website on our ss_theme boilerplate (the theme is in the ss_theme folder of your working directory). Convert the static section in ss-why-choose-us.html (also in your working directory) into a proper ACF flexible content module. Use the constrained container. You have my approval on the plan — go ahead and build it without waiting for further confirmation.",
+      "expected_output": "A new layout appended inside theme/acf-json/group_ss_reusable_modules.json (single shared file, created if missing) with fully-prefixed ss_why_choose_us_* field keys; icon fields as select with icomoon choices; CTA as a link field (not url type); a theme/template-parts/modules/ss_why_choose_us.php using get_sub_field(), have_rows() for the repeater, escaped output, heading highlight as its own field, and the original HTML structure/classes preserved.",
+      "files": ["fixtures/ss-why-choose-us.html", "fixtures/ss_theme"]
+    },
+    {
+      "id": 2,
+      "prompt": "New project setup: I've exported the homepage frame from Figma — the JSON is at figma-export-homepage.json in your working directory, and the ss_theme boilerplate is in the ss_theme folder. Fill in tailwind/tailwind.config.js from the design tokens. Figtree is the body font and Fraunces is the heading font. The dark green rgb(20, 66, 47) is the primary brand color and the yellow rgb(244, 180, 54) is the accent. Approved — go ahead without waiting for confirmation.",
+      "expected_output": "tailwind/tailwind.config.js updated in place (keeping the scaffold: presets, plugins, screens, corePlugins) with a brand 50-900 scale around rgb(20,66,47), primary/secondary/tertiary aliases; fontFamily primary=Figtree secondary=Fraunces with icomoon kept; only non-default tokens added: fontSize ss-26, ss-44, ss-58 (36px = text-4xl default, skipped), spacing ss-30, ss-60, ss-110 (16/24 defaults skipped, 46 -> use p-12/gap-12), boxShadow ss-card for the 0 8px 40px shadow, and baseline z-index tokens.",
+      "files": ["fixtures/figma-export-homepage.json", "fixtures/ss_theme"]
+    },
+    {
+      "id": 3,
+      "prompt": "On the same ss_theme project (boilerplate in the ss_theme folder of your working directory): we need a client testimonials section. It's a 3-column slider of testimonial cards — each card shows reviewer name, reviewer location, a 1-5 star rating, and the quote text. Content comes from a Testimonials custom post type (admin-only, no front-end pages), and the section picks up to 6 testimonials via a relationship field, plus a section heading with an orange highlight word. Register whatever is needed. Plan approved — build it without waiting for confirmation.",
+      "expected_output": "CPT ss_testimonials registered in theme/inc/SmartSites/CustomPostTypeAndTaxonomy.php (or per boilerplate pattern) with public=false; a separate theme/acf-json/group_ss_testimonials.json with direct fields (no flexible content) located on the CPT; a new layout in group_ss_reusable_modules.json with heading + heading_highlight + relationship field (max 6); PHP module using the class-based slider system (slider-col-3, .slide-item), get_field('field', $post->ID) inside the relationship loop, wp_reset_postdata() after it, and no manual Slick initialization.",
+      "files": ["fixtures/ss_theme"]
+    }
+  ]
+}

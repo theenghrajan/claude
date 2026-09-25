@@ -1,0 +1,835 @@
+/* ==========================================================================
+   Roofing Services — body sections
+   Rebuilt from Figma file 96nVKMwdMtneBy9Nr1uoCz, frame 7764:779 (1440 x 10095)
+   Tokens below are the literal values read out of the Figma nodes; this file
+   has no bound design-variable library behind it (get_variable_defs returned
+   an empty set for the frame), so the raw values are promoted to custom
+   properties here.
+   ========================================================================== */
+
+:root {
+  /* ---- colour ---- */
+  --ink: #1e2d3b;
+  --ink-deep: #212b3d;
+  --blue: #5772a3;
+  --white: #ffffff;
+  --text-muted: rgba(30, 45, 59, 0.8);
+  --text-muted-inverse: rgba(255, 255, 255, 0.8);
+  --line: rgba(30, 45, 59, 0.2);
+  --line-inverse: rgba(255, 255, 255, 0.2);
+  --chip-bg: rgba(30, 45, 59, 0.1);
+  --chip-bg-inverse: rgba(255, 255, 255, 0.1);
+  --surface-tint: rgba(87, 114, 163, 0.1);
+  --image-placeholder: #d9d9d9;
+
+  /* ---- radii ---- */
+  --radius-card: 16px;
+  --radius-chip: 34px;
+  --radius-pill: 56px;
+  --radius-badge: 78px;
+
+  /* ---- spacing ---- */
+  --container-max: 1312px;
+  --section-y: 100px;
+  --space-10: 10px;
+  --space-16: 16px;
+  --space-17: 17px;
+  --space-21: 21px;
+  --space-24: 24px;
+  --space-25: 25px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-60: 60px;
+  --space-80: 80px;
+
+  /* ---- type ---- */
+  --font-heading: "Garet", "Nunito", "Trebuchet MS", sans-serif;
+  --font-body: "Spartan", "League Spartan", "Helvetica Neue", Arial, sans-serif;
+  --fs-h2: clamp(28px, 2.5vw, 36px);        /* = 36px at 1440 */
+  --fs-h3: clamp(20px, 1.667vw, 24px);      /* = 24px at 1440 */
+  --fs-lead: clamp(19px, 1.667vw, 24px);    /* = 24px at 1440 */
+  --fs-display: clamp(26px, 2.44vw, 35px);  /* = 35px at 1440 */
+  --fs-body: 16px;
+  --fs-eyebrow: 14px;
+  --lh: 1.3;
+  --tracking-eyebrow: 2.1px;
+
+  /* ---- gradients ---- */
+  --grad-section-light: linear-gradient(180deg, rgba(30, 45, 59, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+  --grad-section-deep: linear-gradient(153.9794deg, #212b3d 28.357%, #5772a3 124.65%);
+  --grad-section-deep-alt: linear-gradient(161.1004deg, #212b3d 28.357%, #5772a3 124.65%);
+  --grad-section-band: linear-gradient(180deg, #1e2d3b 0%, #5772a3 100%);
+  --grad-card-solid: linear-gradient(163.5351deg, #212b3d 28.357%, #5772a3 124.65%);
+  --grad-badge: linear-gradient(142.737deg, #5772a3 10.755%, rgba(87, 114, 163, 0.24) 101.15%);
+  --grad-button: linear-gradient(90deg, #5772a3 0%, #1e2d3b 100%);
+  --grad-panel-scrim: linear-gradient(180deg, rgba(30, 45, 59, 0) 32.125%, #1e2d3b 100%);
+  --grad-cta-scrim: linear-gradient(to left, rgba(30, 45, 59, 0) 0%, #1e2d3b 100%);
+
+  /* ---- elevation ---- */
+  --shadow-badge: 0 4px 16px rgba(30, 45, 59, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; }
+
+/* --------------------------------------------------------------------------
+   Section shells
+   -------------------------------------------------------------------------- */
+
+.section {
+  padding: var(--section-y) 0;
+}
+
+/* Centers a section's content within the page's max content width instead of
+   relying on section padding to fake the inset — section backgrounds stay
+   full-bleed, the container handles horizontal centering. */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: var(--space-16);
+  padding-right: var(--space-16);
+}
+
+.section--white,
+.section--light { background: var(--white); }
+
+.section--tinted {
+  background-color: var(--white);
+  background-image: var(--grad-section-light);
+}
+
+.section--deep { background-image: var(--grad-section-deep); }
+.section--deep-alt { background-image: var(--grad-section-deep-alt); }
+
+.section--gradient-band {
+  background-image: var(--grad-section-band);
+  border: 1px solid rgba(87, 114, 163, 0.1);
+}
+
+/* The lead paragraph sits 80px below the hero and 100px above the next block. */
+.section--intro { padding-top: var(--space-80); }
+
+/* The CTA band butts straight against the section above it. */
+.section--flush { padding: 0 0 var(--section-y); }
+
+/* Sections that stack a centred header above a grid. */
+.section--deep .container,
+.section--deep-alt .container,
+.section--white .container,
+.section--gradient-band .container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-40);
+}
+
+.section--gradient-band .container { gap: var(--space-24); }
+.section--gap-25 .container { gap: var(--space-25); }
+
+/* --------------------------------------------------------------------------
+   Shared building blocks
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 12px var(--space-16);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  background: var(--chip-bg);
+  color: var(--ink);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.chip--inverse {
+  background: var(--chip-bg-inverse);
+  border-color: var(--line-inverse);
+  color: var(--white);
+}
+
+/* Metal-roofing and Getting-started chips keep the dark border in the design. */
+.section--deep-alt .chip--inverse,
+.section--gradient-band .chip--inverse { border-color: var(--line); }
+
+.section__title {
+  margin: 0;
+  max-width: var(--title-max, none);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h2);
+  line-height: var(--lh);
+  color: var(--ink);
+}
+
+.section__title--inverse { color: var(--white); }
+
+/* Figma fixes a width on each heading text node; keeping it preserves the
+   intended line breaks at 1440px. */
+#inspection-title { --title-max: 542px; }
+#installation-title { --title-max: 574px; }
+#metal-title { --title-max: 606px; }
+#flat-title { --title-max: 770px; }
+#repair-vs-replacement-title { --title-max: 575px; }
+#approach-title { --title-max: 617px; }
+#faq-title { --title-max: 324px; }
+
+.section__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.section__head--center {
+  align-items: center;
+  text-align: center;
+}
+
+.section__lead {
+  /* 16px head gap + 9px = the 25px gap Figma puts above this paragraph. */
+  margin: 9px 0 0;
+  max-width: 872px;
+  font-weight: 500;
+  color: var(--text-muted-inverse);
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.prose__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.prose__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-17);
+  color: var(--text-muted);
+}
+
+.prose__body p { margin: 0; }
+
+.inline-link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.inline-link:hover { color: var(--ink-deep); }
+
+/* Text link with trailing arrow glyph ("Learn more", "Explore …"). */
+.link-arrow {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--space-10);
+  border-radius: var(--radius-pill);
+  color: var(--white);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.link-arrow:hover,
+.link-arrow:focus-visible { text-decoration: underline; opacity: 0.8; }
+
+.link-arrow__icon { display: block; transition: transform 0.2s ease; }
+
+.link-arrow:hover .link-arrow__icon,
+.link-arrow:focus-visible .link-arrow__icon { transform: translateX(3px); }
+
+/* Pill buttons rendered as links (all of these navigate). */
+.btn {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-10);
+  padding: var(--space-16) var(--space-24);
+  border-radius: var(--radius-pill);
+  color: var(--white);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
+}
+
+.btn__icon { display: block; transition: transform 0.2s ease; }
+
+.btn:hover .btn__icon,
+.btn:focus-visible .btn__icon { transform: translateX(3px); }
+
+.btn--gradient {
+  background-image: var(--grad-button);
+  filter: drop-shadow(0 4px 12px rgba(30, 45, 59, 0.24));
+}
+
+.btn--gradient:hover { filter: brightness(1.1) drop-shadow(0 4px 12px rgba(30, 45, 59, 0.24)); }
+
+.btn--primary {
+  background: var(--blue);
+  border: 1px solid rgba(87, 114, 163, 0.1);
+  filter: drop-shadow(0 4px 4px rgba(30, 45, 59, 0.16));
+}
+
+.btn--primary:hover { background: var(--ink); }
+
+.btn--ghost { border: 1px solid var(--white); }
+
+/* The arrow icon is a flat white PNG-style SVG (stroke="white", not currentColor),
+   so it needs an explicit filter to stay visible once the hover fill goes white. */
+.btn--ghost:hover {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.btn--ghost:hover .btn__icon { filter: invert(1); }
+
+.btn:focus-visible,
+.link-arrow:focus-visible,
+.inline-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   1. Intro lead paragraph
+   -------------------------------------------------------------------------- */
+
+.intro__lead {
+  margin: 0 auto;
+  max-width: 1015px;
+  font-size: var(--fs-lead);
+  font-weight: 600;
+  line-height: var(--lh);
+  text-align: center;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   2. Service selection — image collage + copy
+   -------------------------------------------------------------------------- */
+
+.collage-split {
+  display: flex;
+  align-items: center;
+  gap: var(--space-60);
+}
+
+.collage {
+  display: flex;
+  flex: 0 0 620px;
+  gap: var(--space-16);
+}
+
+.collage__tall {
+  flex: 0 0 302px;
+  margin: 0;
+  height: 550px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--image-placeholder);
+}
+
+.collage__tall img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Figma crops this fill 6.42% to the left of centre at 127% scale. */
+  object-position: 44% center;
+}
+
+.collage__stack {
+  display: flex;
+  flex: 0 0 302px;
+  flex-direction: column;
+  gap: var(--space-21);
+}
+
+.collage__photo {
+  margin: 0;
+  height: 391px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--image-placeholder);
+}
+
+.collage__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.collage__card {
+  min-height: 136px;
+  padding: 35px var(--space-24);
+  border-radius: var(--radius-card);
+  background: var(--ink);
+}
+
+.collage__card-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-display);
+  line-height: var(--lh);
+  color: var(--white);
+}
+
+.collage__card-sub {
+  margin: 0;
+  color: var(--white);
+}
+
+.collage-split .prose { flex: 0 1 576px; }
+
+/* --------------------------------------------------------------------------
+   3, 4 & 6. Service card grids
+   -------------------------------------------------------------------------- */
+
+.card-grid {
+  display: grid;
+  gap: var(--space-24);
+}
+
+/* 3 cards across, then 2 — expressed on a 6-column track. */
+.card-grid--5 { grid-template-columns: repeat(6, 1fr); }
+.card-grid--5 > *:nth-child(-n + 3) {
+  grid-column: span 2;
+  --card-angle: 150.5558deg;
+  --badge-right: -19px;
+  --badge-bottom: -27px;
+}
+.card-grid--5 > *:nth-child(n + 4) {
+  grid-column: span 3;
+  --card-angle: 159.724deg;
+  --badge-right: -17px;
+  --badge-bottom: -27px;
+}
+
+.card-grid--4 {
+  grid-template-columns: repeat(2, 1fr);
+  --badge-right: -18px;
+  --badge-bottom: -18px;
+}
+
+.card-grid--gap-40 { row-gap: var(--space-40); }
+.card-grid--gap-25 { row-gap: var(--space-25); --badge-right: -19px; }
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-24);
+  padding: var(--space-32);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.card--tinted {
+  min-height: 400px;
+  background-image: linear-gradient(var(--card-angle, 155deg), rgba(255, 255, 255, 0.1) 28.357%, rgba(87, 114, 163, 0.1) 124.65%);
+}
+
+.card--solid {
+  min-height: 320px;
+  background-image: var(--grad-card-solid);
+}
+
+.card__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.card__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  color: var(--white);
+}
+
+.card__copy {
+  margin: 0;
+  color: var(--text-muted-inverse);
+}
+
+/* Circular accent that bleeds out of the bottom-right corner of every card. */
+.badge {
+  position: absolute;
+  right: var(--badge-right, -18px);
+  bottom: var(--badge-bottom, -18px);
+  width: 156px;
+  height: 156px;
+  border: 4px solid var(--blue);
+  border-radius: var(--radius-badge);
+  box-shadow: var(--shadow-badge);
+  overflow: hidden;
+}
+
+.badge--icon { background-image: var(--grad-badge); }
+
+.badge--photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-badge);
+  object-fit: cover;
+}
+
+.badge__icon {
+  position: absolute;
+  /* 44px from the badge's outer edge, minus its 4px border. */
+  left: 40px;
+  top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+}
+
+/* Figma draws these traced icons through a vertical flip; keep their native size. */
+.badge__icon img {
+  display: block;
+  transform: scaleY(-1);
+}
+
+/* --------------------------------------------------------------------------
+   5. Metal roofing panels
+   -------------------------------------------------------------------------- */
+
+.panel-grid {
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+}
+
+.panel {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-16);
+  padding: var(--space-32);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background-color: var(--image-placeholder);
+  background-image: var(--grad-panel-scrim), var(--panel-image);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.panel--metal-roofs { --panel-image: url("assets/panel-metal-roofs.png"); }
+.panel--standing-seam { --panel-image: url("assets/panel-standing-seam-metal-roofing.png"); }
+
+.panel__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  color: var(--white);
+}
+
+.panel__copy {
+  margin: 0;
+  color: var(--text-muted-inverse);
+}
+
+/* --------------------------------------------------------------------------
+   7 & 9. Copy-beside-image blocks
+   -------------------------------------------------------------------------- */
+
+.media-split {
+  display: flex;
+  align-items: center;
+  gap: var(--space-80);
+}
+
+.media-split__text {
+  flex: 0 0 620px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.media-split__text .section__title { max-width: var(--title-max, none); }
+
+.media-split__media {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--image-placeholder);
+}
+
+.media-split__media--stretch { align-self: stretch; }
+.media-split__media--fixed { height: 500px; }
+
+.media-split__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --------------------------------------------------------------------------
+   8. What to expect
+   -------------------------------------------------------------------------- */
+
+.centered-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-17);
+  text-align: center;
+}
+
+.centered-copy p {
+  margin: 0;
+  max-width: 838px;
+  font-weight: 500;
+  color: var(--text-muted-inverse);
+}
+
+/* --------------------------------------------------------------------------
+   10. CTA band
+   -------------------------------------------------------------------------- */
+
+.cta-band {
+  display: flex;
+  align-items: center;
+  min-height: 432px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background-color: var(--ink);
+  background-image: var(--grad-cta-scrim), url("assets/cta-newport-coastline.png");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.cta-band__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-25);
+  width: 100%;
+  max-width: 769px; /* 609px of content + 2 x 80px padding */
+  padding: var(--space-80);
+}
+
+.cta-band__copy {
+  margin: 0;
+  max-width: 609px;
+  color: var(--white);
+}
+
+.cta-band__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+}
+
+/* --------------------------------------------------------------------------
+   11. FAQs
+   -------------------------------------------------------------------------- */
+
+.faq {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.faq__intro {
+  flex: 0 0 424px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.faq__list {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.faq__item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-tint);
+}
+
+.faq__question { margin: 0; }
+
+.faq__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-16);
+  width: 100%;
+  padding: var(--space-32);
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: var(--lh);
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq__toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -4px;
+  border-radius: var(--radius-card);
+}
+
+.faq__question-text { flex: 1 1 auto; }
+
+.faq__icon {
+  display: block;
+  flex: none;
+}
+
+.faq__toggle[aria-expanded="true"] .faq__icon--open { display: none; }
+.faq__toggle[aria-expanded="false"] .faq__icon--close { display: none; }
+
+.faq__panel { padding: 0 var(--space-32) var(--space-32); }
+
+.faq__answer {
+  margin: 0;
+  max-width: 772px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.faq__answer--placeholder {
+  font-style: italic;
+  opacity: 0.65;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive — 1440px is the only width verified against Figma. Everything
+   below is inferred fluid behaviour.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .card-grid--5 { grid-template-columns: repeat(2, 1fr); }
+  .card-grid--5 > *:nth-child(-n + 3),
+  .card-grid--5 > *:nth-child(n + 4) { grid-column: auto; }
+
+  .collage-split,
+  .media-split {
+    flex-wrap: wrap;
+    gap: var(--space-40);
+  }
+
+  .collage,
+  .collage-split .prose,
+  .media-split__text {
+    flex: 1 1 100%;
+  }
+
+  .media-split__media {
+    flex: 1 1 100%;
+    height: clamp(280px, 40vw, 500px);
+  }
+
+  .media-split__media--stretch { align-self: auto; }
+
+  .collage { max-width: 620px; }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --section-y: 64px;
+    --space-80: 48px;
+    --space-60: 40px;
+  }
+
+  .card-grid--4 { grid-template-columns: 1fr; }
+  .panel-grid { flex-wrap: wrap; }
+  .panel { flex: 1 1 100%; }
+
+  .faq { flex-wrap: wrap; gap: var(--space-32); }
+  .faq__intro,
+  .faq__list { flex: 1 1 100%; }
+
+  .cta-band__content { padding: var(--space-40); }
+  .cta-band { min-height: 0; }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --section-y: 48px;
+    --space-32: 24px;
+  }
+
+  .card-grid--5 { grid-template-columns: 1fr; }
+
+  .collage { flex-wrap: wrap; }
+  .collage__tall,
+  .collage__stack { flex: 1 1 100%; }
+  .collage__tall { height: clamp(260px, 70vw, 550px); }
+  .collage__photo { height: clamp(220px, 55vw, 391px); }
+
+  .badge {
+    width: 120px;
+    height: 120px;
+    right: -14px;
+    bottom: -14px;
+  }
+
+  .badge__icon {
+    left: 26px;
+    top: 26px;
+  }
+
+  .cta-band__content { padding: var(--space-32); }
+}
