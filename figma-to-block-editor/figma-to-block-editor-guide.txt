@@ -1,0 +1,236 @@
+FIGMA -> BLOCK EDITOR (GUTENBERG / FSE) WXR SKILL — USER GUIDE
+===============================================================
+
+WHAT THIS SKILL DOES
+---------------------
+Converts a Figma design (a section or page) into a standalone, importable
+WordPress WXR file (.xml) containing native block-editor content:
+
+  - an unsynced pattern (default) — Patterns -> My patterns, insertable
+    into any page without touching live content;
+  - a draft page, on request;
+  - an FSE template or template part (header/footer), on request, for
+    block-theme sites.
+
+Every block is either:
+  - a deep clone of a real block already working on the target site
+    (mined from that site's own WordPress export), or
+  - a fresh core block built by the helper library, whose markup is
+    verified against WordPress's own block validator.
+
+Works for classic themes that use the block editor and for block themes
+(Full Site Editing). Styling uses the site's theme.json presets (colors,
+font sizes, spacing) wherever one matches Figma.
+
+Trigger phrases: "block editor", "Gutenberg", "default WordPress editor",
+"FSE", "Site Editor", "block theme", "pattern", "template part", or
+"convert this Figma design into a WordPress import" for a site that
+doesn't use a page builder.
+
+Runtime: Node.js only (no PHP needed).
+
+
+REQUIREMENTS & NECESSARY PACKAGES
+----------------------------------
+Runtime:
+  - Node.js (any recent LTS).
+
+npm packages:
+
+  Folder                    Package                   Why
+  ------------------------- ------------------------- ------------------------
+  scripts/                  fast-xml-parser ^5.10     Validates the WXR output.
+  scripts/gutenberg-check/  @wordpress/blocks,        OPTIONAL. WordPress's
+                            @wordpress/block-library, real block validator,
+                            jsdom, global-jsdom       run in Node (~470 MB).
+
+Install:
+  cd scripts && npm install
+  cd scripts/gutenberg-check && npm install      (optional, recommended)
+
+Access / integration requirements:
+  - Figma MCP access in Claude (get_metadata, get_design_context,
+    get_variable_defs, get_screenshot, download_assets).
+  - WordPress admin access on the target site, to export
+    (Tools -> Export -> All content) and later import
+    (Tools -> Import -> WordPress).
+  - (Optional) the active theme's folder (theme.json) and any block plugin
+    source (Kadence, Spectra, GenerateBlocks, ...), for higher confidence.
+
+
+WHAT YOU NEED BEFORE STARTING
+-------------------------------
+1. A WXR export from the target site (Tools -> Export -> All content).
+2. A Figma URL with a node-id= parameter.
+3. scripts/node_modules/ installed.
+4. For a template / template part: a block theme. The theme slug is read
+   from the export; if the site never customized a template, Claude asks.
+
+Without #1 or #2 the process stops and asks. Everything else runs to
+completion without mid-build questions.
+
+
+GETTING STARTED — FIRST RUN
+-----------------------------
+(A shorter version with troubleshooting is in quick-start.md.)
+
+A. Export the site: wp-admin -> Tools -> Export -> "All content".
+   Save it e.g. as d:\work\claude\projects\<site-name>\export.xml
+B. Copy the Figma link: right-click the frame -> Copy link to selection.
+C. Connect Figma to Claude once (claude.ai connector, or the local Dev
+   Mode MCP server — see figma-to-html/quickstart.md).
+D. Send Claude the export path, the Figma link, and the output type
+   (pattern / page / template / template part).
+
+   Step  Who     What
+   ----  ------  ----------------------------------------------------------
+   1     Claude  Mines the export: blocks in use, theme presets, WP
+                 version, block theme or not, theme slug
+   2     Claude  Pulls each Figma section's text, variables, images and
+                 screenshot; saves images locally right away
+   3     Claude  Maps each section to real blocks (High/Medium/Low)
+   4-5   Claude  Wires images, writes build-<page>.js, validates the file
+                 (and runs the real Gutenberg validator if installed)
+   6     Claude  Checks the build against the Figma screenshots
+   7     You     Tools -> Import -> WordPress, tick "Download and import
+                 file attachments", then send a screenshot of the result
+
+
+STEP-BY-STEP WORKFLOW
+-----------------------
+
+Step 0 — Pre-flight
+  Confirm the export + Figma link, that the export has block content,
+  the output type, and the WordPress version.
+
+Step 1 — Mine & catalog
+    node scripts/mine-block-data.js export.xml --out catalog.txt
+  Lists every block on every page/pattern/template with a PATH (e.g.
+  0.2.1) build scripts use to grab it, its settings and HTML; block
+  counts (core vs plugin); every setting used; and site facts: WP
+  version, FSE yes/no, theme slug, the preset color/size/spacing names
+  in use, global styles, highest post id.
+
+Step 2 — Pull the Figma design, per section
+  Structure, per-instance content, Figma variables (matched to theme
+  presets), screenshot, and every image downloaded IMMEDIATELY.
+
+Step 3 — Map each section to blocks
+    Figma pattern                  Block
+    ------------------------------ ---------------------------------------
+    Section band                   Group (section), full-width = alignfull
+    Heading / copy                 Heading, Paragraph
+    Photo                          Image
+    Photo band with overlay text   Cover (cloned from the site only)
+    Image + text                   Media & Text (cloned) or Columns
+    Card grid                      Columns, or Group with grid layout
+    Buttons                        Buttons > Button
+    Bullets                        List > List item
+    FAQ                            Details (native expand/collapse)
+    Header / footer (FSE)          Template part (cloned)
+    Embed / SVG icon / custom      Custom HTML
+
+  Resolve each by, in order:
+    1. A real block in catalog.txt — clone it.            (High)
+    2. A fresh core block from the helpers.               (High/Medium)
+    3. A plugin block (Kadence, Spectra, ...) — clone only, text edits
+       only, and give each copy a new unique id.          (Medium)
+    4. Custom HTML block.                                 (Low)
+  Tabs, sliders and hover effects have no core block: cloned from the
+  site's own plugin if it has one, otherwise built static and flagged.
+
+Step 4 — Images
+  Every new image URL gets a matching attachment item with the IDENTICAL
+  URL. At import, WordPress downloads it into the Media Library and
+  rewrites the URL in the content. The validator refuses a build with an
+  image URL that has no attachment. Images are not linked to Media
+  Library ids (the importer can't remap them); re-select an image in the
+  editor to relink it if needed.
+
+Step 5 — Build
+  A build-<section>.js in your PROJECT folder clones mined blocks by path,
+  changes content, applies presets/styles with the helpers (which keep
+  the block comment and its HTML in sync), wraps everything in WXR items,
+  and validates:
+    - well-formed XML and an exact parse round-trip
+    - block nesting (columns, lists, buttons)
+    - every core block's settings match its HTML (the cause of "This
+      block contains unexpected or invalid content")
+    - the image rule, duplicate ids, theme term on templates
+  Optional: scripts/gutenberg-check/validate.mjs runs WordPress's own
+  validator over the file — the exact check the editor performs.
+
+Step 6 — Final visual check (don't skip)
+    [ ] Every image set and backed by an attachment
+    [ ] Theme presets used wherever they match Figma
+    [ ] Typography sizes/weights match
+    [ ] Full-width bands are full width; content width matches the theme
+    [ ] Button styles match
+    [ ] FAQ items expand (Details block), not static text
+    [ ] No leftover copy, alt text or links from cloned blocks
+    [ ] No references to patterns/menus that won't exist on the site
+    [ ] Columns stack on mobile
+    [ ] No fabricated content where Figma was ambiguous (flag instead)
+
+  Known limitation: there's no WordPress instance here to render the
+  front end. A live screenshot after import closes the loop.
+
+Step 7 — Handoff
+  You'll receive: the .wxr.xml path; import steps; the section -> block
+  -> source -> confidence table; approximations and why; every new image
+  (attachment id, URL, local backup); a Figma-link expiry warning;
+  validator results; and an offer to review a live screenshot.
+
+
+GOOD TO KNOW
+-------------
+- Block validation is the #1 risk. A block whose settings don't match its
+  HTML looks fine on the site but shows "unexpected or invalid content"
+  in the editor. Never hand-edit block markup; the helpers keep both in
+  sync, and the validators check it.
+- Figma image links last about 7 days. Import within that window, with
+  "Download and import file attachments" ticked.
+- WordPress blocks SVG uploads, so icons are inlined in Custom HTML
+  blocks or the section stylesheet.
+- Presets: colors like "primary" or sizes like "x-large" come from the
+  theme's theme.json. Using them means a later brand change in
+  Styles updates this content too. Raw hex values don't follow along.
+- Unsynced pattern = each insert is an independent copy. A synced pattern
+  (on request) edits everywhere it's used.
+- Cloning a block that references a synced pattern, a navigation menu or
+  a template part by id only works if that id exists on the target site —
+  the handoff lists every such reference.
+- Plugin blocks (Kadence, Spectra, GenerateBlocks, Stackable) carry a
+  unique id per block; copies get a new one so their CSS doesn't collide.
+- Importing a template/part when the site already has a customized one
+  with the same slug creates a duplicate — check Appearance -> Editor.
+- Multisite: even admins can't save <style>/<svg> in content (no
+  unfiltered_html). Put custom CSS in Styles -> Additional CSS instead.
+
+
+QUICK REFERENCE — FILES IN THIS SKILL
+---------------------------------------
+  scripts/wxr-helpers.js              Core library: mine, parse/serialize,
+                                      clone and edit blocks in sync, build
+                                      fresh core blocks, render WXR,
+                                      validate.
+  scripts/mine-block-data.js          Step 1 catalog CLI.
+  scripts/selftest.js                 Quick check of the helpers.
+  scripts/gutenberg-check/validate.mjs Optional real block validator.
+
+
+FAQ
+----
+Q: Do I need to re-export every time?
+A: No — only for a different site, or after its content/theme changes.
+
+Q: Pattern, page or template?
+A: Pattern by default: safe, touches nothing live. Page on request.
+   Templates/parts only for block themes, and only on request.
+
+Q: What if a Figma color isn't in the theme palette?
+A: It's applied as a raw value and listed in the handoff, with a
+   suggestion to add it to the palette (Styles -> Colors).
+
+Q: Can I run this against a live site instead of an export file?
+A: No — the export is the source of real blocks and preset names.
