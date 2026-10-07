@@ -1,0 +1,46 @@
+ELEMENTOR IMAGE SWAP: HOW IT WORKS
+==================================
+
+WHAT IT DOES
+Takes a Design hand-off (a folder of images per page) and puts each image on its
+WordPress page, in the right Elementor image widget, with Alt Text and Title,
+without touching anything else on the page. The AC task is only read; the reply
+is drafted in chat and you post it yourself.
+
+THE STEPS
+1. Read the AC task       Claude summarizes it and writes solutions to SOLUTIONS.md.
+2. Optimize                Large JPGs become 1600px-wide WebP (about 100-200 KB each).
+                           Example: 226 MB went down to 3.1 MB for 24 images.
+3. Rename                  images/output/<page-slug>/<page-slug>-feature-img01.webp
+4. Prepare                 Claude reads your hand-finished reference page to copy
+                           its pattern, finds each page's ID and the image to
+                           replace, and shows you a CSV to approve.
+5. Swap one page           You check it in the browser.
+6. Swap the rest           After you say "go".
+7. Verify + report         Every page and image is checked, the logs are updated,
+                           and the AC reply is drafted.
+
+WHY IT IS SAFE
+- A backup of each page is saved before any change (images/output/backups/).
+- After saving, the script re-reads the page. If anything other than the image
+  changed, it stops and tells you which backup to restore.
+- Running it again skips pages that are already done.
+- Passwords stay in .env on your PC and are never printed.
+
+HOW IT LOGS IN (no SSH needed)
+It logs in like your browser does: the site pop-up (Basic Auth), then wp-admin.
+Images go through the WordPress media API, and the page change goes through
+Elementor's own save, the one the editor uses. No plugin or server change needed.
+
+WHAT IT WON'T DO
+- Post anything on ActiveCollab.
+- Change background images, galleries, sliders or other widget types.
+- Push to the live site.
+
+IF SOMETHING GOES WRONG
+- "Login failed"            Check .env values (no quotes, no extra spaces).
+- curl (28) timeout          The site is down, or your IP was blocked by the server
+                             firewall. Try the site on mobile data, ask hosting.
+- "UNEXPECTED CHANGES"       Stopped on purpose. Nothing else will run. Ask Claude
+                             to compare against the backup and restore if needed.
+- Page title now visible     Old script version. The current one keeps page settings.
