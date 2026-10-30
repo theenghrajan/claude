@@ -7,6 +7,7 @@ description: Work a SmartSites ActiveCollab "Website Tracking - GA4" task end to
 
 Worked example: `D:\work\seo\Website Tracking - GA4\catalystluxuryresidential.com\10-29-2026-504272-log.md` (WordPress + Divi + Fluent Forms, existing GA4, no phone number, 2026-10-30).
 Form/call how-to (methods A/B/C, Fluent Forms listener, Preview + DebugView testing): `D:\work\seo\guides\tracking\set-up-ga4-form-and-call-events.md`.
+Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidraw.com).
 
 ## Hard rules
 1. **AC is read only.** get/list tools only. The comment is a draft file; the user posts it.
