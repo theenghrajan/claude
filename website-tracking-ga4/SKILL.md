@@ -1,12 +1,13 @@
 ---
 name: website-tracking-ga4
-description: Work a SmartSites ActiveCollab "Website Tracking - GA4" task end to end — read the AC task (read only), check the site, build GTM tags (GA4 page view, form_submission, click_to_call, LeadTracker) in the browser, configure GA4 admin (key events, form_data dimension, unwanted referrals, Google signals, PM IP filter, Enhanced Measurement, alerts), publish GTM on the user's say-so, and draft the AC comment from the template. Use when the user gives a login.smartsites.com task link titled "Website Tracking - GA4", or asks for GA4/GTM/LeadTracker/key-event/referral-exclusion/PM-IP setup on a client site.
+description: Work a SmartSites ActiveCollab "Website Tracking - GA4" task end to end — read the AC task (read only), check the site and detect its form plugin (CF7, Gravity, Elementor, Fluent, WPForms, Divi, HubSpot, ...), build GTM tags (GA4 page view, form_submission via the right per-plugin listener, click_to_call, LeadTracker) in the browser, configure GA4 admin (key events, form_data dimension, unwanted referrals, Google signals, PM IP filter, Enhanced Measurement, alerts), publish GTM on the user's say-so, and draft the AC comment from the template. Use when the user gives a login.smartsites.com task link titled "Website Tracking - GA4", or asks for GA4/GTM/LeadTracker/key-event/referral-exclusion/PM-IP setup on a client site.
 ---
 
 # Website Tracking - GA4 (SmartSites)
 
 Worked example: `D:\work\seo\Website Tracking - GA4\catalystluxuryresidential.com\10-29-2026-504272-log.md` (WordPress + Divi + Fluent Forms, existing GA4, no phone number, 2026-10-30).
-Form/call how-to (methods A/B/C, Fluent Forms listener, Preview + DebugView testing): `D:\work\seo\guides\tracking\set-up-ga4-form-and-call-events.md`.
+**Forms differ per site:** `forms.md` (next to this file) covers plugin detection, choosing the method, the listener and event per plugin, and unknown plugins.
+Form/call testing how-to (Preview + DebugView): `D:\work\seo\guides\tracking\set-up-ga4-form-and-call-events.md`.
 Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidraw.com).
 
 ## Hard rules
@@ -24,7 +25,7 @@ Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidr
 
 ## Step 0 — Read and check
 1. `get_task`, `get_task_comments(limit 0)`, `get_task_comment_numbers`. Note the PM, the site URL (confirm it; the AC project name can differ from the domain), GTM/GA4 IDs already mentioned, and the requested conversions.
-2. Site: `curl` the pages (sitemap / `wp-json/wp/v2/pages`). Look for: GTM-/G-/AW- IDs, CMS/theme, form plugin (`<form` classes), `tel:` links and phone text. Recheck phones in the **rendered** DOM in Chrome (`a[href^="tel:"]`, a regex on `innerText`).
+2. Site: `curl` the pages (sitemap / `wp-json/wp/v2/pages`). Look for: GTM-/G-/AW- IDs, CMS/theme, form plugin on every form page (run the detect snippet in forms.md §1), what happens after a submit (redirect or in-page message), `tel:` links and phone text. Recheck phones in the **rendered** DOM in Chrome (`a[href^="tel:"]`, a regex on `innerText`).
 3. GTM contents via API: `gtm_list_tags/triggers/variables` with `accounts/<acc>/containers/<id>` (read only; there is no write API).
 4. Live container: `curl "https://www.googletagmanager.com/gtm.js?id=GTM-XXXX"` and grep `"version"`, the G- ID and the event names.
 
@@ -47,10 +48,12 @@ Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidr
 - Import the BED template GTM-PFVL7Z84 "! Template for Exclude Internal Traffic in GA4" (Merge into the workspace). Rename the example Google tag to `SS - GA4 Page View` with the property's G- ID. On WordPress, rename tag "...Save Internal Traffic Type (Optional, only for wordpress sites)" to drop the "(Optional...)" part. Check the Page View tag's configuration parameters include the traffic type, otherwise the template's exclusions don't reach GA4.
 
 ## Step 2 — Form + call events (manual §6)
-Follow the guide. Names: triggers `SS - Form Submission`, `SS - Click To Call` (Just Links, Click URL contains `tel:`); tags `SS - GA4 Event (Form Submission)` (event `form_submission`, `form_name`, `form_id`), `SS - GA4 Event (Click To Call)` (event `click_to_call`, `click_url = {{Click URL}}`). Enable built-ins Click URL and Click Text. Form listeners per plugin: "Anil Notes for Tracking - GA4" doc https://docs.google.com/document/d/1RgYdzidICicV3PXqn7yRA7zD5ZoV6X4jvteBq77ffM8 (tabs: Gravity, HubSpot, Metform, Divi, Forminator, Elementor, Fusion, CF7, WPForms, Ninja; Fluent Forms is in the guide).
+**Forms: follow `forms.md`.** Detect the plugin on every form page, pick method A/B/C, copy the plugin's listener from the "Anil Notes for Tracking - GA4" doc (https://docs.google.com/document/d/1RgYdzidICicV3PXqn7yRA7zD5ZoV6X4jvteBq77ffM8, one tab per plugin), and set `SS - Form Submission` to that plugin's event. For a plugin not in the table, research its success hook (forms.md §4), then add a row for it. Tell the user which plugin and method you found before building.
+Fixed names, whatever the plugin: trigger `SS - Form Submission`; tag `SS - GA4 Event (Form Submission)` (event `form_submission`, `form_name`, plus `form_id` if the listener pushes one); listener tag `SS - Listener (<Plugin> Submission)`.
+**Calls:** trigger `SS - Click To Call` (Just Links, Click URL contains `tel:`); tag `SS - GA4 Event (Click To Call)` (event `click_to_call`, `click_url = {{Click URL}}`). Enable built-ins Click URL and Click Text.
 
 ## Step 3 — LeadTracker
-Custom HTML tag `SS - LeadTracker`, All Pages, using the script from the doc above (tab "LeadTracker"; "LT with CR" if numbers are swapped). **Replace the `sendTo` G- ID with this site's ID**; every example in the doc has another site's ID. It hooks `form` submit; with AJAX forms that preventDefault it only sends data (safe). Its GA4 event is `ss_lt_form_submission` with param `form_data`, which requires a global `gtag`; check `typeof gtag` in Preview.
+Custom HTML tag `SS - LeadTracker`, All Pages, using the script from the doc above (tab "LeadTracker"; "LT with CR" if numbers are swapped). **Replace the `sendTo` G- ID with this site's ID**; every example in the doc has another site's ID. It hooks `form` submit; with AJAX forms that preventDefault it only sends data (safe). Button-click-only forms or HubSpot need the variant in forms.md §5. Its GA4 event is `ss_lt_form_submission` with param `form_data`, which requires a global `gtag`; check `typeof gtag` in Preview.
 
 ## Step 4 — GA4 admin
 | Item | Path | Notes |
