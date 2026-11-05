@@ -20,7 +20,7 @@ Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidr
 ## Files (task folder `D:\work\seo\Website Tracking - GA4\<domain>\`)
 - `MM-DD-YYYY-<taskId>-log.md`: append everything, including IDs, UI paths, screenshot links and open issues.
 - `MM-DD-YYYY-<taskId>-comment.txt`: start from `..\comment-template.txt`. Header `<PM name>`, then `As per comment #N,` (N = ordinal from `get_task_comment_numbers`, oldest = 1). End with `Thanks!` only. Fill items as done; `Screenshot: [pending]` until uploaded.
-- Add or update the row in `D:\work\seo\SESSIONS.md` (date, domain, #N (taskId), summary, session id, log link).
+- Add or update the row in `D:\work\SESSIONS.md` (date, area `seo`, domain, #N (taskId), summary, session id, log link).
 - Reusable findings go into `D:\work\seo\guides\` (index in its README); don't repeat them in the log.
 
 ## Step 0 — Read and check
