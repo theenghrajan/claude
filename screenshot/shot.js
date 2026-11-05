@@ -1,8 +1,9 @@
 // Screenshot a page with headless Chrome, optionally outlining elements in red.
-// Usage: node shot.js <url> <out.jpg|png> [--sel "<css>"] [--text "<visible text>"] [--crop N] [--mobile] [--full] [--width N] [--height N]
+// Usage: node shot.js <url> <out.jpg|png> [--sel "<css>"] [--block "<url-pattern>"] [--text "<visible text>"] [--crop N] [--mobile] [--full] [--width N] [--height N]
 //   --sel   outline every element matching the CSS selector; scroll the first into view
 //   --text  outline the first occurrence of this text, case-insensitive (works on view-source: URLs too)
 //   --crop  capture only N px above and below the highlight (full width)
+//   --block skip requests matching this pattern, e.g. "*callrail*" so the real phone shows instead of the CallRail swap
 // No dependencies: drives Chrome over the DevTools protocol (Node 22+ for global WebSocket).
 const { spawn } = require('child_process');
 const fs = require('fs'), os = require('os'), path = require('path');
@@ -10,7 +11,7 @@ const fs = require('fs'), os = require('os'), path = require('path');
 const args = process.argv.slice(2);
 const opt = (k) => { const i = args.indexOf(k); return i < 0 ? null : args.splice(i, 2)[1]; };
 const flag = (k) => { const i = args.indexOf(k); return i < 0 ? false : (args.splice(i, 1), true); };
-const sel = opt('--sel'), text = opt('--text'), crop = +(opt('--crop') || 0), mobile = flag('--mobile'), full = flag('--full');
+const block = opt('--block'), sel = opt('--sel'), text = opt('--text'), crop = +(opt('--crop') || 0), mobile = flag('--mobile'), full = flag('--full');
 const width = +(opt('--width') || (mobile ? 390 : 1440)), height = +(opt('--height') || (mobile ? 844 : 900));
 const [url, out] = args;
 if (!url || !out) { console.error('usage: node shot.js <url> <out.jpg|png> [--sel css] [--text str] [--mobile] [--full]'); process.exit(1); }
@@ -40,6 +41,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const run = async (expr) => (await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true })).result.value;
 
   await send('Page.enable');
+  if (block) { await send('Network.enable'); await send('Network.setBlockedURLs', { urls: [block] }); }
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile });
   if (mobile) await send('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' });
   await send('Page.navigate', { url });
