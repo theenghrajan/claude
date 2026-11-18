@@ -29,10 +29,11 @@ Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidr
 3. GTM contents via API: `gtm_list_tags/triggers/variables` with `accounts/<acc>/containers/<id>` (read only; there is no write API).
 4. Live container: `curl "https://www.googletagmanager.com/gtm.js?id=GTM-XXXX"` and grep `"version"`, the G- ID and the event names.
 
-## Browser (claude-in-chrome)
-- Use the browser the user names (`list_connected_browsers`, then `select_browser`). web@smartsites.com is `authuser=2` on "RAJAN-SS Inspiron 3593". If you hit a "Verify it's you" page, ask the user to sign in; never type passwords.
-- Keep the tab group open between steps (the user asked).
-- URLs: GTM `https://tagmanager.google.com/?authuser=2#/container/accounts/<acc>/containers/<cid>/workspaces/<ws>`; GA4 `https://analytics.google.com/analytics/web/?authuser=2#/a<acc>p<prop>/admin/...` (`events/hub`, `customdefinitions/hub`, `streams/table/<streamId>`, then left nav Data collection / Data filters).
+## Browser (Playwright MCP: `pw-chrome`)
+- Use the `pw-chrome` server (`browser_*` tools). Use `pw-proxy` only if the site is blocked without the proxy. Read pages with `browser_snapshot`, which is cheaper than screenshots. Run JS with `browser_evaluate`.
+- Google account: web@smartsites.com (the big GTM account list). Use `authuser=web@smartsites.com` in URLs, not a numeric index. If the login page or a "Verify it's you" page appears, ask the user to sign in in the Playwright window; never type passwords.
+- Keep the browser open between steps (the user asked); don't call `browser_close`.
+- URLs: GTM `https://tagmanager.google.com/?authuser=web@smartsites.com#/container/accounts/<acc>/containers/<cid>/workspaces/<ws>`; GA4 `https://analytics.google.com/analytics/web/?authuser=web@smartsites.com#/a<acc>p<prop>/admin/...` (`events/hub`, `customdefinitions/hub`, `streams/table/<streamId>`, then left nav Data collection / Data filters).
 - GTM UI quirks:
   - After Save, the next click on **New** is often swallowed; click it again.
   - Escape inside a tag panel opens "Unsaved Changes"; choose Stay Here. Close autocomplete by clicking blank space instead.
@@ -40,8 +41,8 @@ Workflow diagram: `workflow.png` (source `workflow.excalidraw`, open at excalidr
   - Code editor: type the script without leading indentation (it auto-indents).
   - The workspace page can show "Workspace Changes: 0" while loading; reload before trusting it.
   - Submit panel: turn off "Suggested version summary" before typing a name (its description is usually fine to keep).
-- GA4 UI quirks: native `<select>` dropdowns (IP match type) need keyboard input (Home/arrows + Enter). After a layout shift, take a screenshot before clicking.
-- Verify every save with the `gtm_list_*` API or a zoomed screenshot.
+- GA4 UI quirks: for native `<select>` dropdowns (IP match type), use `browser_select_option`; if that fails, use keyboard input (Home/arrows + Enter). After a layout shift, take a fresh snapshot before clicking.
+- Verify every save with the `gtm_list_*` API or `browser_take_screenshot` of the saved panel.
 
 ## Step 1 — GTM container (FED)
 - Never add a second container if one is installed. A new one goes under account **SmartSites v1.0** (web@ss).

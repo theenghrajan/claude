@@ -5,7 +5,7 @@ The GA4 side never changes: tag `SS - GA4 Event (Form Submission)`, event `form_
 Listener scripts: "Anil Notes for Tracking - GA4" doc https://docs.google.com/document/d/1RgYdzidICicV3PXqn7yRA7zD5ZoV6X4jvteBq77ffM8 (one tab per plugin; read it with `docs_get(include_tabs=true)` and copy the tab's script exactly).
 
 ## 1. Detect (every form page, not just /contact/)
-List the pages that have forms (sitemap / `wp-json/wp/v2/pages`, then grep each page for `<form` and `<iframe`). On each form page, run this in Chrome (`javascript_tool`):
+List the pages that have forms (sitemap / `wp-json/wp/v2/pages`, then grep each page for `<form` and `<iframe`). On each form page, run this in `pw-chrome` (`browser_evaluate`):
 
 ```js
 (() => {
@@ -49,6 +49,7 @@ Also check what happens after a successful submit: is there a redirect to a than
 | Avada / Fusion | "Fusion Form Listener" | `fusion-form-ajax-submit-done` | `form_submit` | |
 | HubSpot (embed v4) | "HS Form Listener (v4)" | `hs-form-event:on-submission:success` / `message` | `form_submission` | Same tab has the HubSpot LeadTracker loader; iframe embeds can't be read |
 | Custom landing page | "Custom LP DL" | input + submit | `form_submit_success` | |
+| BoldForm Lite | own listener (helpingfamilies.com 471666 log) | jQuery `ajaxSuccess`, FormData `action=boldform_lite_submit_form`, skip `success === false` | `boldform_submit_success` | Plugin pushes nothing itself. Pushes `form_id` (`boldform_form_id`). Success = `.boldform-lite-form__message.is-success` |
 | Unknown plugin | research (below) | — | your own `<plugin>_submit_success` | Add a row here and a tab note in the log |
 
 Name the listener tag `SS - Listener (<Plugin> Submission)`, fired on `SS - DOM Ready` (or All Pages if the listener script waits for the DOM itself). Name the trigger `SS - Form Submission` whichever method is used, so the GA4 tag never changes. If the site has **two plugins**, make one trigger per plugin (`SS - Form Submission (CF7)`, ...) and attach all of them to the same GA4 tag.
