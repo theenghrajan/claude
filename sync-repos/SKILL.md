@@ -1,6 +1,6 @@
 ---
 name: sync-repos
-description: Pull, stage, commit and push every git repo under D:\work in one go (skips smart-dev/, snippets/, Wallpapers/). Use when the user runs /sync-repos or says "sync all repos", "pull/commit/push everything", "push all work repos". Invoking it IS the go-ahead to commit and push.
+description: Pull, stage, commit and push every git repo under D:\work in one go (skips smart-dev/, Wallpapers/). Use when the user runs /sync-repos or says "sync all repos", "pull/commit/push everything", "push all work repos". Invoking it IS the go-ahead to commit and push.
 ---
 
 # Sync repos
@@ -20,6 +20,6 @@ Script: `D:/work/claude/sync-repos/sync.sh` (Git Bash). Repos are discovered aut
 
 ## Rules
 
-- `smart-dev/` and `snippets/` are never touched (snippets holds credentials — CLAUDE.md forbids uploading it). To change the skip list, edit `SKIP` in `sync.sh`.
+- `smart-dev/` is never touched. `snippets/` IS synced to its own origin only, but it holds credentials: unstage anything `!! SENSITIVE?` or that looks like a key/password/.env, and never upload its content anywhere else. To change the skip list, edit `SKIP` in `sync.sh`.
 - Pushes go to whatever branch each repo is on. If a repo isn't on `main`/`master`, say so in the report.
 - No force-push, no `--no-verify`. If a push is rejected, report it and stop for that repo.

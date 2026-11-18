@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Sync every git repo under D:/work (except smart-dev/, snippets/, Wallpapers/).
+# Sync every git repo under D:/work (except smart-dev/, Wallpapers/).
 #   sync.sh prep  -> fetch, ff-only pull, stage all, report staged files + red flags
 #   sync.sh push  -> push every repo that is ahead of its remote
 # Commits are made in between (by Claude, per repo, with a written message).
 set -u
 ROOT=/d/work
-SKIP='^\./(smart-dev|snippets|Wallpapers)(/|$)'   # snippets holds credentials: never push it
+SKIP='^\./(smart-dev|Wallpapers)(/|$)'   # snippets is synced: holds credentials, watch SENSITIVE flags
 FLAG='(^|/)\.env($|\.)|\.pem$|\.key$|id_rsa|credential|secret'
 BIG=5000000   # bytes; flag staged files above this
 
